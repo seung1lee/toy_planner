@@ -125,9 +125,7 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### 🚧 Task 3: 오늘의 퀘스트 자동 생성 (결정적) + 날짜 seam
-
-> 진행 중: `lib/game/today-quests.ts`(순수 생성 로직) + `today` 날짜 seam(useGame) + 단위 테스트 완료(S3-1~S3-4 통과). **남은 작업**: `components/summer-quest/quest-list.tsx`(미완료 표시 + 보상 미리보기 + 주말 Empty)와 `home-screen.tsx` 배선, app-shell 홈 뷰에 연결. UI 배선 완료 후 spec S3 체크박스를 켠다.
+### ✅ Task 3: 오늘의 퀘스트 자동 생성 (결정적) + 날짜 seam
 
 - **담당 판정 기준**: S3-1, S3-2, S3-3, S3-4
 - **크기**: M
