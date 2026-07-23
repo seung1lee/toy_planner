@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import type {
   GameState,
   PlanItem,
@@ -20,10 +21,12 @@ import {
 } from "@/lib/game/progress";
 import { canAfford, applyRedeem } from "@/lib/game/redeem";
 import { levelForExp } from "@/lib/game/level";
+import { checkAchievements } from "@/lib/game/achievements";
 import {
   LEVELS,
   type LevelTier,
   ALL_CLEAR_BONUS_ITEM_ID,
+  ACHIEVEMENTS,
 } from "@/config/game";
 
 export interface LevelUpEvent {
@@ -290,6 +293,46 @@ export function GameProvider({
   }, [state.profiles, state.progress, hydrated]);
 
   const dismissLevelUp = React.useCallback(() => setLevelUpEvent(null), []);
+
+  // 업적 잠금 해제 ratchet: 조건을 만족하는 순간 영구히 기록하고 알림을 낸다 (S16-2, S16-3).
+  // 조건이 나중에 거짓이 돼도(예: 완료 해제) 이미 해제된 업적은 잠기지 않는다.
+  React.useEffect(() => {
+    if (!hydrated) return;
+    setState((s) => {
+      let changed = false;
+      const nextProgress = { ...s.progress };
+      for (const profile of s.profiles) {
+        if (profile.role !== "child") continue;
+        const progress = s.progress[profile.id];
+        if (!progress) continue;
+        const satisfied = checkAchievements({
+          exp: progress.exp,
+          plan: s.plans[profile.id] ?? [],
+          completions: s.completions[profile.id] ?? [],
+          redemptions: s.redemptions.filter((r) => r.profileId === profile.id),
+          today,
+        });
+        const newlyUnlocked = [...satisfied].filter(
+          (id) => !progress.unlockedAchievementIds.includes(id)
+        );
+        if (newlyUnlocked.length === 0) continue;
+        changed = true;
+        nextProgress[profile.id] = {
+          ...progress,
+          unlockedAchievementIds: [
+            ...progress.unlockedAchievementIds,
+            ...newlyUnlocked,
+          ],
+        };
+        for (const id of newlyUnlocked) {
+          const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+          if (achievement) toast(`새 업적 획득: "${achievement.name}"!`);
+        }
+      }
+      if (!changed) return s;
+      return { ...s, progress: nextProgress };
+    });
+  }, [state.completions, state.redemptions, state.progress, state.profiles, state.plans, hydrated, today]);
 
   const value = React.useMemo<GameContextValue>(
     () => ({

@@ -256,3 +256,29 @@ describe("HomeScreen — 진행 게이지 + 전체완료 보너스·컨페티 (S
     expect(screen.getByTestId("confetti")).toBeInTheDocument(); // S15-4
   });
 });
+
+describe("HomeScreen — 업적 (S16)", () => {
+  it("[S16-2][S16-3] 첫 완료 시 '첫 클리어' 업적이 해제되고 알림이 나타난다", async () => {
+    const state = stateWithMathPlan();
+    const profile = state.profiles.find((p) => p.id === "childA")!;
+    const user = userEvent.setup();
+    render(
+      <GameProvider adapter={adapterWith(state)} today={MON}>
+        <Toaster />
+        <HomeScreen profile={profile} />
+      </GameProvider>
+    );
+
+    await user.click(
+      await screen.findByRole("checkbox", { name: "수학 문제 완료" })
+    );
+
+    expect(
+      await screen.findByText('새 업적 획득: "첫 클리어"!')
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "업적" }));
+    expect(await screen.findByText("첫 클리어")).toBeInTheDocument();
+    expect(screen.getAllByText("획득").length).toBeGreaterThan(0);
+  });
+});

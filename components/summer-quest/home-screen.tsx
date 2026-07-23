@@ -10,6 +10,7 @@ import { StatsPanel } from "./stats-panel";
 import { LevelUpDialog } from "./levelup-dialog";
 import { AllClearMessage } from "./all-clear-message";
 import { ProgressGauge } from "./progress-gauge";
+import { AchievementsDialog } from "./achievements-dialog";
 
 const REACTION_DURATION_MS = 600;
 
@@ -50,6 +51,10 @@ export function HomeScreen({ profile }: { profile: Profile }) {
         streak={streak}
         reacting={reacting}
       />
+
+      <div>
+        <AchievementsDialog unlockedIds={progress.unlockedAchievementIds} />
+      </div>
 
       <AllClearMessage show={allClear} />
 

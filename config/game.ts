@@ -36,6 +36,19 @@ export const LEVELS: LevelTier[] = [
 export const STREAK_MILESTONES = [3, 7, 14];
 export const MILESTONE_BONUS = 15;
 
+export interface Achievement {
+  id: string;
+  name: string;
+}
+
+/** 기본 업적 목록 (제안 기본값) */
+export const ACHIEVEMENTS: Achievement[] = [
+  { id: "first-clear", name: "첫 클리어" },
+  { id: "level-5", name: "Lv5 도달" },
+  { id: "streak-7", name: "7일 연속" },
+  { id: "first-redeem", name: "첫 교환" },
+];
+
 export function initialProgress(profileId: ProfileId): ChildProgress {
   return {
     profileId,
