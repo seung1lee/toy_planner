@@ -195,7 +195,9 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Task 7: 주 경계 지속성
+### ✅ Task 7: 주 경계 지속성
+
+> 구현 없이 테스트로 검증만 했다 — Task 1~6의 아키텍처 결정(계획 무주-바인딩, streak 완전 파생, progress에 주 리셋 로직 자체가 없음)이 이미 S12를 구조적으로 만족시킨다. `hooks/useGame.tsx` 수정은 불필요해 생략.
 
 - **담당 판정 기준**: S12-1, S12-2, S12-3
 - **크기**: S
@@ -203,14 +205,14 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 - **참조**: (없음 — 계획 무(無)주-바인딩 설계의 검증)
 - **구현 대상**:
   - `lib/game/today-quests.test.ts` (다음 주 날짜로 생성 유지) — Modify
-  - `hooks/useGame.tsx` (주 경계에서 진행·계획 리셋 없음 확인, 필요 시 보정) — Modify
+  - `components/summer-quest/week-boundary.test.tsx` (진행 지속성 + 재계획, 새 파일)
 - **검증**: Vitest — 다음 주 월요일 날짜로도 지난 주 계획대로 생성 `[S12-1]`, 진행 지표 이어짐(리셋 없음) `[S12-2]`, 재계획으로 갱신(S2-4 경로) `[S12-3]`
 
 ---
 
-### Checkpoint: Tasks 5~7 이후 (성장·연속)
-- [ ] `bun run test` / `bun run build` / `scripts/spec-coverage.sh summer-quest --tests`
-- [ ] 레벨업·아바타·streak·주 경계가 end-to-end로 동작
+### ✅ Checkpoint: Tasks 5~7 이후 (성장·연속)
+- [x] `bun run test` (44 passed) / `bun run build` (성공) / `scripts/spec-coverage.sh summer-quest --tests` (미인용은 전부 미구현 Task 8~13 소관)
+- [x] 레벨업·아바타·streak·주 경계가 end-to-end로 동작 (실제 dev 서버 확인: EXP 30/코인 15/streak 1일/전체완료 메시지)
 
 ---
 

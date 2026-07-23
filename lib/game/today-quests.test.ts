@@ -7,6 +7,7 @@ const MON = new Date(2024, 0, 1);
 const TUE = new Date(2024, 0, 2);
 const SAT = new Date(2024, 0, 6);
 const SUN = new Date(2024, 0, 7);
+const MON_NEXT_WEEK = new Date(2024, 0, 8);
 
 const math: PlanItem = {
   id: "math",
@@ -36,5 +37,11 @@ describe("todayQuests — 결정적 생성", () => {
     const a = todayQuests([math], MON);
     const b = todayQuests([math], MON);
     expect(a).toEqual(b);
+  });
+
+  it("[S12-1] 계획에 주(week) 개념이 없어 다음 주 같은 요일에도 동일하게 생성된다", () => {
+    const thisWeek = todayQuests([math], MON);
+    const nextWeek = todayQuests([math], MON_NEXT_WEEK);
+    expect(nextWeek).toEqual(thisWeek);
   });
 });
