@@ -1,3 +1,12 @@
+## 진행 현황 (한글)
+
+### summer-quest (Summer Quest RPG)
+- **상태**: spec → wireframe → plan → 구현(Task 1~13) → E2E까지 완료. 브랜치 `feat/summer-quest`.
+- **핵심 루프**: 이번 주 계획(요일 선택) → 오늘의 퀘스트(자동 생성) → 완료 시 EXP·코인·레벨업·아바타·streak·업적·마일스톤·전체완료 보너스·컨페티 → 길드 샵 교환 → 부모 관리.
+- **검증**: Vitest 75개, Playwright E2E 1개(spec.md 11단계 전체) — 전부 통과, 3회 연속 무플레이키.
+- **다음 단계**: PR 생성 후, 아래 "요청된 추가 기능" 목록을 우선순위대로 하나씩 검토·구현.
+- 자세한 내용: [artifacts/summer-quest/spec.md](./artifacts/summer-quest/spec.md), [plan.md](./artifacts/summer-quest/plan.md), [learnings.md](./artifacts/summer-quest/learnings.md)
+
 ## Workflow
 
 ### 코어 경로 (Spec-Driven Development)
