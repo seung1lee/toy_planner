@@ -29,7 +29,7 @@ export function ShopScreen({ profileId }: { profileId: ProfileId }) {
             const redeemed = isRewardRedeemed(r.id);
             const affordable = canAfford(coins, r.price);
             return (
-              <Card key={r.id}>
+              <Card key={r.id} data-testid={`reward-card-${r.id}`}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Gift className="size-4" />
