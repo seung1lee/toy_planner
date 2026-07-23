@@ -95,3 +95,17 @@ date: 2026-07-23
 **에피소드**: Task 11에서 전체완료 보너스(S15-3)를 추가하자, Task 4의 `stateWithMathPlan()`(항목 1개) 기반 테스트 "[S4-2][S4-3] 완료 시 EXP 10·코인 5"가 깨졌다 — 항목을 완료하는 순간 그게 곧 "오늘 전체완료"이기도 해서 보너스 +10이 더해져 코인이 5가 아니라 15가 됐다. `stateWithTwoMondayItems()`(항목 2개, 하나는 미완료로 남김)를 새로 만들어 S4/S5 테스트만 교체하고, S14가 의존하는 단일 항목 fixture는 그대로 뒀다.
 
 **증거**: `components/summer-quest/home-screen.test.tsx`, Task 11 커밋. 수정 후 61 tests pass.
+
+---
+triggers: [setState updater, "impure updater", toast, "side effect in setState", ratchet effect, useEffect setState]
+status: verified
+scope: this-repo (React 19, useGame.tsx의 ratchet 이펙트 패턴)
+date: 2026-07-23
+---
+## setState((s) => ...) 업데이터 함수 안에서 toast() 같은 부수효과를 호출하지 마라
+
+**지시문**: `useEffect` 안에서 "조건을 만족하면 상태를 갱신하고 알림도 띄운다" 같은 ratchet 패턴을 짤 때, `setState((s) => { ...; toast(...); return next; })`처럼 업데이터 함수 내부에 부수효과를 넣지 마라. React는 이 함수를 여러 번 호출할 수 있다는 가정 위에 설계돼 있어(Strict Mode 이중 호출, 향후 concurrent 기능), 부수효과가 중복 실행될 위험이 있다. 대신 계산은 effect 클로저의 `state`에서 미리 끝내고, `setState(다음상태)`는 순수 객체로 한 번 호출한 뒤, `toast()` 같은 부수효과는 그 호출 바깥(effect 본문)에서 실행하라.
+
+**에피소드**: Task 12에서 업적 ratchet 이펙트를 `setState((s) => { ...; toast(`새 업적...`); return next; })` 형태로 작성했다. Task 13에서 마일스톤 ratchet을 똑같은 패턴으로 또 짜려다가, 두 곳 다 이 문제가 있다는 걸 깨닫고 업적 쪽도 함께 고쳤다 — `setState(state 스냅샷 기반의 다음 상태)`로 바꾸고 `toast()` 호출들을 effect 본문 끝으로 옮겼다.
+
+**증거**: `hooks/useGame.tsx`의 업적/마일스톤 ratchet 이펙트, Task 13 커밋. 수정 후 75 tests pass.

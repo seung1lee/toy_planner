@@ -11,11 +11,19 @@ import { LevelUpDialog } from "./levelup-dialog";
 import { AllClearMessage } from "./all-clear-message";
 import { ProgressGauge } from "./progress-gauge";
 import { AchievementsDialog } from "./achievements-dialog";
+import { MilestoneDialog } from "./milestone-dialog";
 
 const REACTION_DURATION_MS = 600;
 
 export function HomeScreen({ profile }: { profile: Profile }) {
-  const { state, today, levelUpEvent, dismissLevelUp } = useGame();
+  const {
+    state,
+    today,
+    levelUpEvent,
+    dismissLevelUp,
+    milestoneEvent,
+    dismissMilestone,
+  } = useGame();
   const progress = state.progress[profile.id];
   const plan = state.plans[profile.id] ?? [];
   const completions = state.completions[profile.id] ?? [];
@@ -75,6 +83,15 @@ export function HomeScreen({ profile }: { profile: Profile }) {
           from={levelUpEvent.from}
           to={levelUpEvent.to}
           onClose={dismissLevelUp}
+        />
+      )}
+
+      {milestoneEvent && milestoneEvent.profileId === profile.id && (
+        <MilestoneDialog
+          milestone={milestoneEvent.milestone}
+          nextMilestone={milestoneEvent.nextMilestone}
+          daysUntilNext={milestoneEvent.daysUntilNext}
+          onClose={dismissMilestone}
         />
       )}
     </div>

@@ -1,6 +1,11 @@
 // 순수 EXP·코인 산술. types, config에만 의존한다.
 import type { ChildProgress } from "@/types/game";
-import { EXP_PER_QUEST, COINS_PER_QUEST, ALL_COMPLETE_BONUS } from "@/config/game";
+import {
+  EXP_PER_QUEST,
+  COINS_PER_QUEST,
+  ALL_COMPLETE_BONUS,
+  MILESTONE_BONUS,
+} from "@/config/game";
 
 /** 완료 지급: EXP·코인 +고정값. */
 export function applyComplete(progress: ChildProgress): ChildProgress {
@@ -28,4 +33,9 @@ export function applyAllClearBonus(progress: ChildProgress): ChildProgress {
 /** 전체완료가 깨졌을 때 보너스 대칭 회수, 0에서 clamp. */
 export function revokeAllClearBonus(progress: ChildProgress): ChildProgress {
   return { ...progress, coins: Math.max(0, progress.coins - ALL_COMPLETE_BONUS) };
+}
+
+/** streak 마일스톤 도달 보너스 지급 (S17-1). */
+export function applyMilestoneBonus(progress: ChildProgress): ChildProgress {
+  return { ...progress, coins: progress.coins + MILESTONE_BONUS };
 }

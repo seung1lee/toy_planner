@@ -6,6 +6,7 @@ import type { StorageAdapter } from "@/types/storage";
 import { seedState } from "@/services/seed";
 import { GameProvider } from "@/hooks/useGame";
 import { Toaster } from "@/components/ui/sonner";
+import { toISODate } from "@/lib/game/today-quests";
 import { HomeScreen } from "./home-screen";
 
 function adapterWith(state: GameState): StorageAdapter {
@@ -280,5 +281,44 @@ describe("HomeScreen — 업적 (S16)", () => {
     await user.click(screen.getByRole("button", { name: "업적" }));
     expect(await screen.findByText("첫 클리어")).toBeInTheDocument();
     expect(screen.getAllByText("획득").length).toBeGreaterThan(0);
+  });
+});
+
+describe("HomeScreen — streak 마일스톤 보상 (S17)", () => {
+  it("[S17-1][S17-2][S17-3] streak가 3일에 도달하면 보너스·알림·다음 마일스톤이 표시된다", async () => {
+    // 월·화 이미 완료된 상태에서, 수요일에 마지막 완료를 해 streak 3일을 완성한다.
+    const MONDAY = new Date(2024, 0, 1);
+    const TUESDAY = new Date(2024, 0, 2);
+    const WEDNESDAY = new Date(2024, 0, 3);
+
+    const state = seedState();
+    state.plans.childA = [
+      { id: "math", name: "수학 문제", dailyGoal: 20, weekdays: [1, 2, 3, 4, 5] },
+    ];
+    state.completions.childA = [
+      { profileId: "childA", planItemId: "math", dateISO: toISODate(MONDAY) },
+      { profileId: "childA", planItemId: "math", dateISO: toISODate(TUESDAY) },
+    ];
+    state.progress.childA.exp = 0;
+    state.progress.childA.coins = 0;
+
+    const profile = state.profiles.find((p) => p.id === "childA")!;
+    const user = userEvent.setup();
+    render(
+      <GameProvider adapter={adapterWith(state)} today={WEDNESDAY}>
+        <HomeScreen profile={profile} />
+      </GameProvider>
+    );
+
+    await user.click(
+      await screen.findByRole("checkbox", { name: "수학 문제 완료" })
+    );
+
+    expect(await screen.findByText("3일 연속 달성! 🔥")).toBeInTheDocument(); // S17-2
+    expect(
+      screen.getByText("다음 마일스톤(7일)까지 4일 남았어요")
+    ).toBeInTheDocument(); // S17-3
+    // 완료 코인(5) + 오늘 전체완료 보너스(10, 유일한 항목이라 동시 발생) + 마일스톤 보너스(15) = 30
+    expect(await screen.findByText("코인 30")).toBeInTheDocument(); // S17-1
   });
 });

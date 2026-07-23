@@ -18,10 +18,13 @@ import {
   applyUncomplete,
   applyAllClearBonus,
   revokeAllClearBonus,
+  applyMilestoneBonus,
 } from "@/lib/game/progress";
 import { canAfford, applyRedeem } from "@/lib/game/redeem";
 import { levelForExp } from "@/lib/game/level";
 import { checkAchievements } from "@/lib/game/achievements";
+import { computeStreak } from "@/lib/game/streak";
+import { checkMilestone } from "@/lib/game/milestone";
 import {
   LEVELS,
   type LevelTier,
@@ -33,6 +36,13 @@ export interface LevelUpEvent {
   profileId: ProfileId;
   from: LevelTier;
   to: LevelTier;
+}
+
+export interface MilestoneEvent {
+  profileId: ProfileId;
+  milestone: number;
+  nextMilestone: number | null;
+  daysUntilNext: number | null;
 }
 
 interface GameContextValue {
@@ -57,6 +67,9 @@ interface GameContextValue {
   /** 방금 발생한 레벨업 이벤트 (표시 후 dismissLevelUp으로 닫는다) */
   levelUpEvent: LevelUpEvent | null;
   dismissLevelUp: () => void;
+  /** 방금 발생한 streak 마일스톤 이벤트 (표시 후 dismissMilestone으로 닫는다) */
+  milestoneEvent: MilestoneEvent | null;
+  dismissMilestone: () => void;
 }
 
 const GameContext = React.createContext<GameContextValue | null>(null);
@@ -296,43 +309,93 @@ export function GameProvider({
 
   // 업적 잠금 해제 ratchet: 조건을 만족하는 순간 영구히 기록하고 알림을 낸다 (S16-2, S16-3).
   // 조건이 나중에 거짓이 돼도(예: 완료 해제) 이미 해제된 업적은 잠기지 않는다.
+  // setState 업데이터 함수는 순수해야 하므로, 계산은 클로저의 state로 미리 끝내고
+  // toast 같은 부수효과는 setState 호출 바깥(effect 본문)에서 실행한다.
   React.useEffect(() => {
     if (!hydrated) return;
-    setState((s) => {
-      let changed = false;
-      const nextProgress = { ...s.progress };
-      for (const profile of s.profiles) {
-        if (profile.role !== "child") continue;
-        const progress = s.progress[profile.id];
-        if (!progress) continue;
-        const satisfied = checkAchievements({
-          exp: progress.exp,
-          plan: s.plans[profile.id] ?? [],
-          completions: s.completions[profile.id] ?? [],
-          redemptions: s.redemptions.filter((r) => r.profileId === profile.id),
-          today,
-        });
-        const newlyUnlocked = [...satisfied].filter(
-          (id) => !progress.unlockedAchievementIds.includes(id)
-        );
-        if (newlyUnlocked.length === 0) continue;
-        changed = true;
-        nextProgress[profile.id] = {
-          ...progress,
-          unlockedAchievementIds: [
-            ...progress.unlockedAchievementIds,
-            ...newlyUnlocked,
-          ],
-        };
-        for (const id of newlyUnlocked) {
-          const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-          if (achievement) toast(`새 업적 획득: "${achievement.name}"!`);
-        }
+    const nextProgress = { ...state.progress };
+    const unlockedNames: string[] = [];
+    let changed = false;
+
+    for (const profile of state.profiles) {
+      if (profile.role !== "child") continue;
+      const progress = state.progress[profile.id];
+      if (!progress) continue;
+      const satisfied = checkAchievements({
+        exp: progress.exp,
+        plan: state.plans[profile.id] ?? [],
+        completions: state.completions[profile.id] ?? [],
+        redemptions: state.redemptions.filter((r) => r.profileId === profile.id),
+        today,
+      });
+      const newlyUnlocked = [...satisfied].filter(
+        (id) => !progress.unlockedAchievementIds.includes(id)
+      );
+      if (newlyUnlocked.length === 0) continue;
+      changed = true;
+      nextProgress[profile.id] = {
+        ...progress,
+        unlockedAchievementIds: [
+          ...progress.unlockedAchievementIds,
+          ...newlyUnlocked,
+        ],
+      };
+      for (const id of newlyUnlocked) {
+        const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+        if (achievement) unlockedNames.push(achievement.name);
       }
-      if (!changed) return s;
-      return { ...s, progress: nextProgress };
-    });
-  }, [state.completions, state.redemptions, state.progress, state.profiles, state.plans, hydrated, today]);
+    }
+
+    if (changed) setState({ ...state, progress: nextProgress });
+    for (const name of unlockedNames) toast(`새 업적 획득: "${name}"!`);
+  }, [state, hydrated, today]);
+
+  // streak 마일스톤 ratchet: 도달 시 보너스를 1회 지급하고 dialog 이벤트를 낸다 (S17-1, S17-2).
+  const [milestoneEvent, setMilestoneEvent] =
+    React.useState<MilestoneEvent | null>(null);
+
+  React.useEffect(() => {
+    if (!hydrated) return;
+    const nextProgress = { ...state.progress };
+    let changed = false;
+    let latestEvent: MilestoneEvent | null = null;
+
+    for (const profile of state.profiles) {
+      if (profile.role !== "child") continue;
+      const progress = state.progress[profile.id];
+      if (!progress) continue;
+      const plan = state.plans[profile.id] ?? [];
+      const completions = state.completions[profile.id] ?? [];
+      const streak = computeStreak(plan, completions, today);
+      const { newlyReached, nextMilestone, daysUntilNext } = checkMilestone(
+        streak,
+        progress.awardedMilestones
+      );
+      if (newlyReached.length === 0) continue;
+
+      changed = true;
+      let updatedProgress = progress;
+      for (const m of newlyReached) {
+        updatedProgress = applyMilestoneBonus(updatedProgress);
+      }
+      updatedProgress = {
+        ...updatedProgress,
+        awardedMilestones: [...progress.awardedMilestones, ...newlyReached],
+      };
+      nextProgress[profile.id] = updatedProgress;
+      latestEvent = {
+        profileId: profile.id,
+        milestone: newlyReached[newlyReached.length - 1],
+        nextMilestone,
+        daysUntilNext,
+      };
+    }
+
+    if (changed) setState({ ...state, progress: nextProgress });
+    if (latestEvent) setMilestoneEvent(latestEvent);
+  }, [state, hydrated, today]);
+
+  const dismissMilestone = React.useCallback(() => setMilestoneEvent(null), []);
 
   const value = React.useMemo<GameContextValue>(
     () => ({
@@ -351,6 +414,8 @@ export function GameProvider({
       uncompleteQuest,
       levelUpEvent,
       dismissLevelUp,
+      milestoneEvent,
+      dismissMilestone,
     }),
     [
       state,
@@ -367,6 +432,8 @@ export function GameProvider({
       uncompleteQuest,
       levelUpEvent,
       dismissLevelUp,
+      milestoneEvent,
+      dismissMilestone,
     ]
   );
 
