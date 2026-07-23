@@ -4,7 +4,16 @@
 - **상태**: spec → wireframe → plan → 구현(Task 1~13) → E2E까지 완료. 브랜치 `feat/summer-quest`.
 - **핵심 루프**: 이번 주 계획(요일 선택) → 오늘의 퀘스트(자동 생성) → 완료 시 EXP·코인·레벨업·아바타·streak·업적·마일스톤·전체완료 보너스·컨페티 → 길드 샵 교환 → 부모 관리.
 - **검증**: Vitest 75개, Playwright E2E 1개(spec.md 11단계 전체) — 전부 통과, 3회 연속 무플레이키.
-- **다음 단계**: PR 생성 후, 아래 "요청된 추가 기능" 목록을 우선순위대로 하나씩 검토·구현.
+- **PR**: https://github.com/seung1lee/toy_planner/pull/1
+- **추가 기능 진행 (사용자 요청, 우선순위대로)**:
+  - ✅ 브라우저 탭 제목 "Tony Planner"
+  - ✅ streak → "연속" 한글화
+  - ✅ 프로필 이름/아바타 설정 다이얼로그
+  - ✅ 자녀 홈 진입 시 응원 문구
+  - ✅ 계획 항목별 EXP·코인 보상 커스터마이즈
+  - ✅ 오렌지/퍼플 "모험" 테마 (CSS 변수만 조정, components/ui 미수정)
+  - ✅ 자녀 프로필 동적 추가 (ProfileId를 string으로 완화)
+  - ⏸ 후순위(변경량 큼, 미착수): 날씨 연동, 지난주 기반 추천, 캘린더/휴식일, Google Calendar 연동
 - 자세한 내용: [artifacts/summer-quest/spec.md](./artifacts/summer-quest/spec.md), [plan.md](./artifacts/summer-quest/plan.md), [learnings.md](./artifacts/summer-quest/learnings.md)
 
 ## Workflow
