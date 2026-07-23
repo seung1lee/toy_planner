@@ -10,6 +10,8 @@ import type {
 import type { StorageAdapter } from "@/types/storage";
 import { localStorageAdapter } from "@/services/localStorageAdapter";
 import { seedState } from "@/services/seed";
+import { toISODate } from "@/lib/game/today-quests";
+import { applyComplete, applyUncomplete } from "@/lib/game/progress";
 
 interface GameContextValue {
   state: GameState;
@@ -19,6 +21,13 @@ interface GameContextValue {
   setActiveProfileId: (id: ProfileId) => void;
   addPlanItem: (profileId: ProfileId, item: PlanItem) => void;
   removePlanItem: (profileId: ProfileId, itemId: string) => void;
+  isQuestCompleted: (
+    profileId: ProfileId,
+    planItemId: string,
+    dateISO: string
+  ) => boolean;
+  completeQuest: (profileId: ProfileId, planItemId: string) => void;
+  uncompleteQuest: (profileId: ProfileId, planItemId: string) => void;
 }
 
 const GameContext = React.createContext<GameContextValue | null>(null);
@@ -85,6 +94,70 @@ export function GameProvider({
     []
   );
 
+  const isQuestCompleted = React.useCallback(
+    (profileId: ProfileId, planItemId: string, dateISO: string) =>
+      (state.completions[profileId] ?? []).some(
+        (c) => c.planItemId === planItemId && c.dateISO === dateISO
+      ),
+    [state.completions]
+  );
+
+  const completeQuest = React.useCallback(
+    (profileId: ProfileId, planItemId: string) => {
+      const dateISO = toISODate(today);
+      setState((s) => {
+        const existing = s.completions[profileId] ?? [];
+        // 이미 완료된 퀘스트는 무시 (중복 지급 방지)
+        if (
+          existing.some(
+            (c) => c.planItemId === planItemId && c.dateISO === dateISO
+          )
+        ) {
+          return s;
+        }
+        return {
+          ...s,
+          completions: {
+            ...s.completions,
+            [profileId]: [...existing, { profileId, planItemId, dateISO }],
+          },
+          progress: {
+            ...s.progress,
+            [profileId]: applyComplete(s.progress[profileId]),
+          },
+        };
+      });
+    },
+    [today]
+  );
+
+  const uncompleteQuest = React.useCallback(
+    (profileId: ProfileId, planItemId: string) => {
+      const dateISO = toISODate(today);
+      setState((s) => {
+        const existing = s.completions[profileId] ?? [];
+        const wasCompleted = existing.some(
+          (c) => c.planItemId === planItemId && c.dateISO === dateISO
+        );
+        if (!wasCompleted) return s; // 완료 상태가 아니면 무시
+        return {
+          ...s,
+          completions: {
+            ...s.completions,
+            [profileId]: existing.filter(
+              (c) => !(c.planItemId === planItemId && c.dateISO === dateISO)
+            ),
+          },
+          progress: {
+            ...s.progress,
+            [profileId]: applyUncomplete(s.progress[profileId]),
+          },
+        };
+      });
+    },
+    [today]
+  );
+
   const value = React.useMemo<GameContextValue>(
     () => ({
       state,
@@ -93,8 +166,20 @@ export function GameProvider({
       setActiveProfileId,
       addPlanItem,
       removePlanItem,
+      isQuestCompleted,
+      completeQuest,
+      uncompleteQuest,
     }),
-    [state, today, activeProfileId, addPlanItem, removePlanItem]
+    [
+      state,
+      today,
+      activeProfileId,
+      addPlanItem,
+      removePlanItem,
+      isQuestCompleted,
+      completeQuest,
+      uncompleteQuest,
+    ]
   );
 
   if (!hydrated) return null;

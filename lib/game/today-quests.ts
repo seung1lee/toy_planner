@@ -7,6 +7,14 @@ export function weekdayOf(date: Date): Weekday | null {
   return d >= 1 && d <= 5 ? (d as Weekday) : null;
 }
 
+/** 로컬 날짜를 YYYY-MM-DD로. 완료 기록·streak 판정의 날짜 키. */
+export function toISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export interface TodayQuest {
   planItemId: string;
   name: string;

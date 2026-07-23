@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { GameState } from "@/types/game";
 import type { StorageAdapter } from "@/types/storage";
 import { seedState } from "@/services/seed";
@@ -62,5 +63,48 @@ describe("QuestList — 오늘의 퀘스트 표시", () => {
 
     renderQuestList(MON, state);
     expect(await screen.findByText("수학 문제")).toBeInTheDocument();
+  });
+});
+
+describe("QuestList — 완료 체크/해제", () => {
+  it("[S4-1] 완료 체크 시 체크와 취소선이 나타난다", async () => {
+    const user = userEvent.setup();
+    renderQuestList(MON, stateWithMathPlan());
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "수학 문제 완료",
+    });
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+    expect(screen.getByText("수학 문제")).toHaveClass("line-through");
+  });
+
+  it("[S4-4] 진입 후 완료까지 클릭 1회 (3회 이하)로 끝난다", async () => {
+    const user = userEvent.setup();
+    renderQuestList(MON, stateWithMathPlan());
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "수학 문제 완료",
+    });
+
+    await user.click(checkbox); // 클릭 1회
+
+    expect(checkbox).toBeChecked();
+  });
+
+  it("[S5-1] 완료 해제 시 미완료 표시로 돌아간다", async () => {
+    const user = userEvent.setup();
+    renderQuestList(MON, stateWithMathPlan());
+    const checkbox = await screen.findByRole("checkbox", {
+      name: "수학 문제 완료",
+    });
+
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(checkbox).not.toBeChecked();
+    expect(screen.getByText("수학 문제")).not.toHaveClass("line-through");
   });
 });

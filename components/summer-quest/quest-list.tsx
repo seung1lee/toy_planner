@@ -10,14 +10,17 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { EXP_PER_QUEST, COINS_PER_QUEST } from "@/config/game";
+import { cn } from "@/lib/utils";
 import type { ProfileId } from "@/types/game";
 import { useGame } from "@/hooks/useGame";
-import { todayQuests } from "@/lib/game/today-quests";
+import { todayQuests, toISODate } from "@/lib/game/today-quests";
 
 export function QuestList({ profileId }: { profileId: ProfileId }) {
-  const { state, today } = useGame();
+  const { state, today, isQuestCompleted, completeQuest, uncompleteQuest } =
+    useGame();
   const plan = state.plans[profileId] ?? [];
   const quests = todayQuests(plan, today);
+  const dateISO = toISODate(today);
 
   if (quests.length === 0) {
     return (
@@ -37,18 +40,35 @@ export function QuestList({ profileId }: { profileId: ProfileId }) {
 
   return (
     <ul className="flex flex-col gap-2">
-      {quests.map((q) => (
-        <li
-          key={q.planItemId}
-          className="flex items-center gap-3 rounded-lg border p-3"
-        >
-          <Checkbox aria-label={`${q.name} 완료`} disabled />
-          <span className="flex-1">{q.name}</span>
-          <span className="text-xs text-muted-foreground">
-            +{EXP_PER_QUEST} EXP · +{COINS_PER_QUEST}코인
-          </span>
-        </li>
-      ))}
+      {quests.map((q) => {
+        const completed = isQuestCompleted(profileId, q.planItemId, dateISO);
+        return (
+          <li
+            key={q.planItemId}
+            className="flex items-center gap-3 rounded-lg border p-3"
+          >
+            <Checkbox
+              aria-label={`${q.name} 완료`}
+              checked={completed}
+              onCheckedChange={(checked) => {
+                if (checked === true) completeQuest(profileId, q.planItemId);
+                else uncompleteQuest(profileId, q.planItemId);
+              }}
+            />
+            <span
+              className={cn(
+                "flex-1",
+                completed && "text-muted-foreground line-through"
+              )}
+            >
+              {q.name}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              +{EXP_PER_QUEST} EXP · +{COINS_PER_QUEST}코인
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }

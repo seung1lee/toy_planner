@@ -140,7 +140,7 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Task 4: 퀘스트 완료/해제 + EXP·코인 지급/회수
+### ✅ Task 4: 퀘스트 완료/해제 + EXP·코인 지급/회수
 
 - **담당 판정 기준**: S4-1, S4-2, S4-3, S4-4, S5-1, S5-2, S5-3
 - **크기**: M
@@ -155,11 +155,11 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Checkpoint: Tasks 1~4 이후 (핵심 루프)
-- [ ] 모든 테스트 통과: `bun run test`
-- [ ] 빌드 성공: `bun run build`
-- [ ] 커버리지 검사 통과: `scripts/spec-coverage.sh summer-quest --tests`
-- [ ] 계획→오늘의 퀘스트→완료→EXP·코인 반영→해제→회수가 end-to-end로 동작
+### ✅ Checkpoint: Tasks 1~4 이후 (핵심 루프)
+- [x] 모든 테스트 통과: `bun run test` (27 passed)
+- [x] 빌드 성공: `bun run build`
+- [x] 커버리지 검사 통과: `scripts/spec-coverage.sh summer-quest --tests` (미인용 ID는 전부 미구현 Task 5~13 소관; [[learnings]] 참조)
+- [x] 계획→오늘의 퀘스트→완료→EXP·코인 반영→해제→회수가 end-to-end로 동작 (실제 dev 서버, Browser MCP로 확인: 완료 시 EXP 10·코인 5, 해제 시 EXP 0·코인 0)
 
 ---
 
