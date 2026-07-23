@@ -2,6 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EXP_PER_QUEST, COINS_PER_QUEST } from "@/config/game";
 import type { ProfileId } from "@/types/game";
 import { useGame } from "@/hooks/useGame";
 import { formatWeekdays } from "./weekdays";
@@ -23,6 +24,13 @@ export function PlanList({ profileId }: { profileId: ProfileId }) {
         >
           <span className="flex-1">
             {item.name} {item.dailyGoal}개 · {formatWeekdays(item.weekdays)}
+            {(item.expReward !== undefined || item.coinReward !== undefined) && (
+              <span className="text-muted-foreground">
+                {" "}
+                · +{item.expReward ?? EXP_PER_QUEST} EXP · +
+                {item.coinReward ?? COINS_PER_QUEST}코인
+              </span>
+            )}
           </span>
           <Button
             variant="ghost"

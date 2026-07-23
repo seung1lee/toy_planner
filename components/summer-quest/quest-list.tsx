@@ -10,7 +10,6 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { EXP_PER_QUEST, COINS_PER_QUEST } from "@/config/game";
 import { cn } from "@/lib/utils";
 import type { ProfileId } from "@/types/game";
 import { useGame } from "@/hooks/useGame";
@@ -54,7 +53,7 @@ export function QuestList({ profileId }: { profileId: ProfileId }) {
               onCheckedChange={(checked) => {
                 if (checked === true) {
                   completeQuest(profileId, q.planItemId);
-                  toast(`+${EXP_PER_QUEST} EXP · +${COINS_PER_QUEST}코인`);
+                  toast(`+${q.expReward} EXP · +${q.coinReward}코인`);
                 } else {
                   uncompleteQuest(profileId, q.planItemId);
                 }
@@ -69,7 +68,7 @@ export function QuestList({ profileId }: { profileId: ProfileId }) {
               {q.name}
             </span>
             <span className="text-xs text-muted-foreground">
-              +{EXP_PER_QUEST} EXP · +{COINS_PER_QUEST}코인
+              +{q.expReward} EXP · +{q.coinReward}코인
             </span>
           </li>
         );

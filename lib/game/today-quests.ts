@@ -1,5 +1,6 @@
-// 순수 퀘스트 생성 로직. types에만 의존한다 (DOM·저장소 무관).
+// 순수 퀘스트 생성 로직. types, config에만 의존한다 (DOM·저장소 무관).
 import type { PlanItem, QuestCompletion, Weekday } from "@/types/game";
+import { EXP_PER_QUEST, COINS_PER_QUEST } from "@/config/game";
 
 /** JS Date.getDay(): 0=일 … 6=토. 월(1)~금(5)만 Weekday, 주말이면 null. */
 export function weekdayOf(date: Date): Weekday | null {
@@ -19,6 +20,9 @@ export interface TodayQuest {
   planItemId: string;
   name: string;
   dailyGoal: number;
+  /** 계획 항목에 지정된 값, 없으면 config 기본값 */
+  expReward: number;
+  coinReward: number;
 }
 
 /**
@@ -34,6 +38,8 @@ export function todayQuests(plan: PlanItem[], date: Date): TodayQuest[] {
       planItemId: item.id,
       name: item.name,
       dailyGoal: item.dailyGoal,
+      expReward: item.expReward ?? EXP_PER_QUEST,
+      coinReward: item.coinReward ?? COINS_PER_QUEST,
     }));
 }
 

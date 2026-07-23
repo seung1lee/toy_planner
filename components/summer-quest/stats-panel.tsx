@@ -37,7 +37,7 @@ export function StatsPanel({
             <span>코인 {progress.coins}</span>
             <span className="flex items-center gap-1">
               <Flame className="size-4" />
-              streak {streak}일
+              연속 {streak}일
             </span>
           </div>
           <ExpBar exp={progress.exp} />

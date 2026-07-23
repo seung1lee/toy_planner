@@ -12,6 +12,10 @@ import { AllClearMessage } from "./all-clear-message";
 import { ProgressGauge } from "./progress-gauge";
 import { AchievementsDialog } from "./achievements-dialog";
 import { MilestoneDialog } from "./milestone-dialog";
+import { EncouragementMessage } from "./encouragement-message";
+import { WeatherWidget } from "./weather-widget";
+import { ExerciseRecommendation } from "./exercise-recommendation";
+import { useWeather } from "@/hooks/useWeather";
 
 const REACTION_DURATION_MS = 600;
 
@@ -27,6 +31,7 @@ export function HomeScreen({ profile }: { profile: Profile }) {
   const progress = state.progress[profile.id];
   const plan = state.plans[profile.id] ?? [];
   const completions = state.completions[profile.id] ?? [];
+  const { weather, loading: weatherLoading } = useWeather();
 
   const streak = computeStreak(plan, completions, today);
   const quests = todayQuests(plan, today);
@@ -53,6 +58,15 @@ export function HomeScreen({ profile }: { profile: Profile }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <EncouragementMessage />
+        </div>
+        <WeatherWidget weather={weather} loading={weatherLoading} />
+      </div>
+
+      <ExerciseRecommendation weather={weather} />
+
       <StatsPanel
         name={profile.name}
         progress={progress}

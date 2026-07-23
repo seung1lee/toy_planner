@@ -4,6 +4,8 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { ProfileSwitch } from "./profile-switch";
+import { ProfileSettingsDialog } from "./profile-settings-dialog";
+import { AddChildDialog } from "./add-child-dialog";
 import { PlanScreen } from "./plan-screen";
 import { HomeScreen } from "./home-screen";
 import { ShopScreen } from "./shop-screen";
@@ -17,7 +19,13 @@ export function AppShell() {
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      <ProfileSwitch />
+      <div className="flex items-center justify-between">
+        <ProfileSwitch />
+        <div className="flex items-center gap-2">
+          <AddChildDialog />
+          <ProfileSettingsDialog />
+        </div>
+      </div>
 
       {activeProfile.role === "parent" ? (
         <ParentScreen />

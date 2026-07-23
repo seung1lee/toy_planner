@@ -30,6 +30,7 @@ import {
   type LevelTier,
   ALL_CLEAR_BONUS_ITEM_ID,
   ACHIEVEMENTS,
+  initialProgress,
 } from "@/config/game";
 
 export interface LevelUpEvent {
@@ -51,6 +52,11 @@ interface GameContextValue {
   today: Date;
   activeProfileId: ProfileId;
   setActiveProfileId: (id: ProfileId) => void;
+  updateProfile: (
+    profileId: ProfileId,
+    updates: Partial<Pick<Profile, "name" | "avatarEmoji">>
+  ) => void;
+  addChildProfile: (name: string, avatarEmoji?: string) => void;
   addPlanItem: (profileId: ProfileId, item: PlanItem) => void;
   removePlanItem: (profileId: ProfileId, itemId: string) => void;
   addReward: (reward: Reward) => void;
@@ -107,6 +113,38 @@ export function GameProvider({
   React.useEffect(() => {
     if (hydrated) adapter.save(state);
   }, [state, hydrated, adapter]);
+
+  const updateProfile = React.useCallback(
+    (
+      profileId: ProfileId,
+      updates: Partial<Pick<Profile, "name" | "avatarEmoji">>
+    ) => {
+      setState((s) => ({
+        ...s,
+        profiles: s.profiles.map((p) =>
+          p.id === profileId ? { ...p, ...updates } : p
+        ),
+      }));
+    },
+    []
+  );
+
+  const addChildProfile = React.useCallback(
+    (name: string, avatarEmoji?: string) => {
+      const id = `child-${crypto.randomUUID()}`;
+      setState((s) => ({
+        ...s,
+        profiles: [
+          ...s.profiles,
+          { id, name, role: "child", avatarEmoji } as Profile,
+        ],
+        plans: { ...s.plans, [id]: [] },
+        completions: { ...s.completions, [id]: [] },
+        progress: { ...s.progress, [id]: initialProgress(id) },
+      }));
+    },
+    []
+  );
 
   const addPlanItem = React.useCallback(
     (profileId: ProfileId, item: PlanItem) => {
@@ -214,11 +252,16 @@ export function GameProvider({
           return s;
         }
         const updated = [...existing, { profileId, planItemId, dateISO }];
-        let progress = applyComplete(s.progress[profileId]);
+        const quests = todayQuests(s.plans[profileId] ?? [], today);
+        const quest = quests.find((q) => q.planItemId === planItemId);
+        let progress = applyComplete(
+          s.progress[profileId],
+          quest?.expReward,
+          quest?.coinReward
+        );
         let completions = updated;
 
         // 오늘 배정분 전체완료로 방금 전환됐다면 보너스를 1회 지급한다 (S15-3)
-        const quests = todayQuests(s.plans[profileId] ?? [], today);
         const alreadyAwarded = updated.some(
           (c) =>
             c.planItemId === ALL_CLEAR_BONUS_ITEM_ID && c.dateISO === dateISO
@@ -254,11 +297,16 @@ export function GameProvider({
         const updated = existing.filter(
           (c) => !(c.planItemId === planItemId && c.dateISO === dateISO)
         );
-        let progress = applyUncomplete(s.progress[profileId]);
+        const quests = todayQuests(s.plans[profileId] ?? [], today);
+        const quest = quests.find((q) => q.planItemId === planItemId);
+        let progress = applyUncomplete(
+          s.progress[profileId],
+          quest?.expReward,
+          quest?.coinReward
+        );
         let completions = updated;
 
         // 전체완료가 깨지면 보너스도 대칭적으로 회수한다 (INV-1 정신)
-        const quests = todayQuests(s.plans[profileId] ?? [], today);
         const bonusWasAwarded = updated.some(
           (c) =>
             c.planItemId === ALL_CLEAR_BONUS_ITEM_ID && c.dateISO === dateISO
@@ -403,6 +451,8 @@ export function GameProvider({
       today,
       activeProfileId,
       setActiveProfileId,
+      updateProfile,
+      addChildProfile,
       addPlanItem,
       removePlanItem,
       addReward,

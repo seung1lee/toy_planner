@@ -171,13 +171,13 @@ describe("HomeScreen — 전체 완료 메시지 + streak (S7, S8)", () => {
     renderHome(MON, stateWithFiveMondayItems());
     const checkboxes = await screen.findAllByRole("checkbox");
 
-    expect(screen.getByText("streak 0일")).toBeInTheDocument();
+    expect(screen.getByText("연속 0일")).toBeInTheDocument();
 
     for (const checkbox of checkboxes) {
       await user.click(checkbox);
     }
 
-    expect(await screen.findByText("streak 1일")).toBeInTheDocument();
+    expect(await screen.findByText("연속 1일")).toBeInTheDocument();
   });
 });
 
