@@ -1,12 +1,19 @@
 // Summer Quest 도메인 타입. 이 레이어는 의존성이 없다.
 
-export type ProfileId = "childA" | "childB" | "parent";
+/**
+ * 프로필 식별자. 시드 프로필은 "childA"/"childB"/"parent" 리터럴이지만,
+ * 자녀 추가 기능으로 런타임에 생성되는 ID도 담아야 해서 string으로 둔다.
+ * GameState의 Record 필드들도 이미 Record<string, ...>이라 이 타입만 넓히면 충분하다.
+ */
+export type ProfileId = string;
 export type Role = "child" | "parent";
 
 export interface Profile {
   id: ProfileId;
   name: string;
   role: Role;
+  /** 프로필 아바타 (이모지) */
+  avatarEmoji?: string;
 }
 
 /** 월(1) ~ 금(5). 주말은 배정 불가. */
@@ -18,6 +25,10 @@ export interface PlanItem {
   dailyGoal: number;
   /** 수행 요일 (월~금 중 다중, 최소 1개) */
   weekdays: Weekday[];
+  /** 완료당 지급 EXP (미지정 시 config의 기본값 사용) */
+  expReward?: number;
+  /** 완료당 지급 코인 (미지정 시 config의 기본값 사용) */
+  coinReward?: number;
 }
 
 export interface QuestCompletion {

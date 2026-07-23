@@ -7,21 +7,29 @@ import {
   MILESTONE_BONUS,
 } from "@/config/game";
 
-/** 완료 지급: EXP·코인 +고정값. */
-export function applyComplete(progress: ChildProgress): ChildProgress {
+/** 완료 지급: EXP·코인 +값 (미지정 시 기본값). 계획 항목별 보상 오버라이드 지원. */
+export function applyComplete(
+  progress: ChildProgress,
+  exp: number = EXP_PER_QUEST,
+  coins: number = COINS_PER_QUEST
+): ChildProgress {
   return {
     ...progress,
-    exp: progress.exp + EXP_PER_QUEST,
-    coins: progress.coins + COINS_PER_QUEST,
+    exp: progress.exp + exp,
+    coins: progress.coins + coins,
   };
 }
 
-/** 완료 해제 회수: EXP·코인 -고정값, 0에서 clamp (음수 불가 — INV-4). */
-export function applyUncomplete(progress: ChildProgress): ChildProgress {
+/** 완료 해제 회수: EXP·코인 -값, 0에서 clamp (음수 불가 — INV-4). */
+export function applyUncomplete(
+  progress: ChildProgress,
+  exp: number = EXP_PER_QUEST,
+  coins: number = COINS_PER_QUEST
+): ChildProgress {
   return {
     ...progress,
-    exp: Math.max(0, progress.exp - EXP_PER_QUEST),
-    coins: Math.max(0, progress.coins - COINS_PER_QUEST),
+    exp: Math.max(0, progress.exp - exp),
+    coins: Math.max(0, progress.coins - coins),
   };
 }
 

@@ -12,6 +12,7 @@ import { AllClearMessage } from "./all-clear-message";
 import { ProgressGauge } from "./progress-gauge";
 import { AchievementsDialog } from "./achievements-dialog";
 import { MilestoneDialog } from "./milestone-dialog";
+import { EncouragementMessage } from "./encouragement-message";
 
 const REACTION_DURATION_MS = 600;
 
@@ -53,6 +54,8 @@ export function HomeScreen({ profile }: { profile: Profile }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <EncouragementMessage />
+
       <StatsPanel
         name={profile.name}
         progress={progress}

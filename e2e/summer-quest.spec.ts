@@ -37,7 +37,7 @@ test("summer-quest — spec.md End-to-end 검증 1~11단계", async ({ page }) =
   await page.getByRole("button", { name: "월", exact: true }).click();
   await page.getByRole("button", { name: "수", exact: true }).click();
   await page.getByRole("button", { name: "금", exact: true }).click();
-  await page.getByRole("button", { name: "추가" }).click();
+  await page.getByRole("button", { name: "추가", exact: true }).click();
   await expect(page.getByText("한자쓰기 10개 · 월·수·금")).toBeVisible();
 
   // 3. 오늘의 퀘스트 자동 생성 — 월요일엔 보이고 화요일엔 안 보인다 (S3)
@@ -69,7 +69,7 @@ test("summer-quest — spec.md End-to-end 검증 1~11단계", async ({ page }) =
   await page.getByRole("checkbox", { name: "영어 단어 완료" }).click();
   await expect(page.getByText("오늘의 모험을 전부 클리어했어요! 🎉")).toBeVisible();
   await expect(page.getByTestId("confetti")).toBeVisible();
-  await expect(page.getByText("streak 1일")).toBeVisible();
+  await expect(page.getByText("연속 1일")).toBeVisible();
   await expect(page.getByText("EXP 30")).toBeVisible();
   await expect(page.getByText("코인 25")).toBeVisible();
 
@@ -95,7 +95,7 @@ test("summer-quest — spec.md End-to-end 검증 1~11단계", async ({ page }) =
   await expect(page.getByText("3일 연속 달성! 🔥")).toBeVisible();
   await expect(page.getByText("다음 마일스톤(7일)까지 4일 남았어요")).toBeVisible();
   await page.getByRole("button", { name: "계속하기" }).click();
-  await expect(page.getByText("streak 3일")).toBeVisible();
+  await expect(page.getByText("연속 3일")).toBeVisible();
 
   // 8. 길드 샵에서 보상 교환 — 코인 즉시 차감, 교환됨 표시. 코인 부족 보상은 비활성 (S10, S11, INV-4)
   await page.getByRole("button", { name: "길드 샵" }).click();
@@ -123,10 +123,10 @@ test("summer-quest — spec.md End-to-end 검증 1~11단계", async ({ page }) =
   await expect(page.getByText("보드게임")).toBeVisible();
 
   await page.getByRole("button", { name: "홈" }).click();
-  await expect(page.getByText("streak 3일")).toBeVisible();
+  await expect(page.getByText("연속 3일")).toBeVisible();
 
   await page.getByRole("radio", { name: "자녀B" }).click();
-  await expect(page.getByText("streak 3일")).toHaveCount(0);
+  await expect(page.getByText("연속 3일")).toHaveCount(0);
   await expect(page.getByText("EXP 0")).toBeVisible(); // 자녀B는 별도 진행
   await page.getByRole("radio", { name: "자녀A" }).click();
 

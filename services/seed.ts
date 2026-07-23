@@ -9,9 +9,9 @@ export function seedState(): GameState {
   return {
     version: STATE_VERSION,
     profiles: [
-      { id: "childA", name: "자녀A", role: "child" },
-      { id: "childB", name: "자녀B", role: "child" },
-      { id: "parent", name: "부모", role: "parent" },
+      { id: "childA", name: "자녀A", role: "child", avatarEmoji: "🦁" },
+      { id: "childB", name: "자녀B", role: "child", avatarEmoji: "🐰" },
+      { id: "parent", name: "부모", role: "parent", avatarEmoji: "🧑" },
     ],
     plans: {
       childA: [

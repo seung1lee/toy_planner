@@ -22,6 +22,7 @@ export function ProfileSwitch() {
       >
         {profiles.map((p) => (
           <ToggleGroupItem key={p.id} value={p.id} aria-label={p.name}>
+            {p.avatarEmoji && <span aria-hidden="true">{p.avatarEmoji}</span>}
             {p.name}
           </ToggleGroupItem>
         ))}

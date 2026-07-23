@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { EXP_PER_QUEST, COINS_PER_QUEST } from "@/config/game";
 import type { ProfileId, Weekday } from "@/types/game";
 import { useGame } from "@/hooks/useGame";
 import { WEEKDAY_LABEL, WEEKDAY_ORDER } from "./weekdays";
@@ -13,6 +14,8 @@ export function PlanForm({ profileId }: { profileId: ProfileId }) {
   const { addPlanItem } = useGame();
   const [name, setName] = React.useState("");
   const [goal, setGoal] = React.useState("");
+  const [expReward, setExpReward] = React.useState("");
+  const [coinReward, setCoinReward] = React.useState("");
   const [weekdays, setWeekdays] = React.useState<string[]>([]);
 
   const canAdd = name.trim().length > 0 && weekdays.length > 0;
@@ -25,9 +28,13 @@ export function PlanForm({ profileId }: { profileId: ProfileId }) {
       name: name.trim(),
       dailyGoal: Number(goal) || 0,
       weekdays: weekdays.map(Number).sort((a, b) => a - b) as Weekday[],
+      expReward: expReward === "" ? undefined : Number(expReward),
+      coinReward: coinReward === "" ? undefined : Number(coinReward),
     });
     setName("");
     setGoal("");
+    setExpReward("");
+    setCoinReward("");
     setWeekdays([]);
   }
 
@@ -51,6 +58,26 @@ export function PlanForm({ profileId }: { profileId: ProfileId }) {
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             placeholder="20"
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="plan-exp">완료당 EXP</FieldLabel>
+          <Input
+            id="plan-exp"
+            type="number"
+            value={expReward}
+            onChange={(e) => setExpReward(e.target.value)}
+            placeholder={String(EXP_PER_QUEST)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="plan-coin">완료당 코인</FieldLabel>
+          <Input
+            id="plan-coin"
+            type="number"
+            value={coinReward}
+            onChange={(e) => setCoinReward(e.target.value)}
+            placeholder={String(COINS_PER_QUEST)}
           />
         </Field>
         <Field>
