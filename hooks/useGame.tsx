@@ -6,6 +6,7 @@ import type {
   PlanItem,
   Profile,
   ProfileId,
+  Reward,
 } from "@/types/game";
 import type { StorageAdapter } from "@/types/storage";
 import { localStorageAdapter } from "@/services/localStorageAdapter";
@@ -29,6 +30,8 @@ interface GameContextValue {
   setActiveProfileId: (id: ProfileId) => void;
   addPlanItem: (profileId: ProfileId, item: PlanItem) => void;
   removePlanItem: (profileId: ProfileId, itemId: string) => void;
+  addReward: (reward: Reward) => void;
+  removeReward: (rewardId: string) => void;
   isQuestCompleted: (
     profileId: ProfileId,
     planItemId: string,
@@ -104,6 +107,17 @@ export function GameProvider({
     },
     []
   );
+
+  const addReward = React.useCallback((reward: Reward) => {
+    setState((s) => ({ ...s, rewards: [...s.rewards, reward] }));
+  }, []);
+
+  const removeReward = React.useCallback((rewardId: string) => {
+    setState((s) => ({
+      ...s,
+      rewards: s.rewards.filter((r) => r.id !== rewardId),
+    }));
+  }, []);
 
   const isQuestCompleted = React.useCallback(
     (profileId: ProfileId, planItemId: string, dateISO: string) =>
@@ -203,6 +217,8 @@ export function GameProvider({
       setActiveProfileId,
       addPlanItem,
       removePlanItem,
+      addReward,
+      removeReward,
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,
@@ -215,6 +231,8 @@ export function GameProvider({
       activeProfileId,
       addPlanItem,
       removePlanItem,
+      addReward,
+      removeReward,
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,

@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { ProfileSwitch } from "./profile-switch";
 import { PlanScreen } from "./plan-screen";
 import { HomeScreen } from "./home-screen";
+import { ShopScreen } from "./shop-screen";
+import { ParentScreen } from "./parent-screen";
 
-type ChildView = "home" | "plan";
+type ChildView = "home" | "plan" | "shop";
 
 export function AppShell() {
   const { activeProfile } = useActiveProfile();
@@ -19,16 +20,7 @@ export function AppShell() {
       <ProfileSwitch />
 
       {activeProfile.role === "parent" ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>부모 · 길드 샵 관리</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              보상 등록 · 교환 내역 (구현 예정)
-            </p>
-          </CardContent>
-        </Card>
+        <ParentScreen />
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
@@ -46,13 +38,18 @@ export function AppShell() {
             >
               이번 주 계획
             </Button>
+            <Button
+              variant={childView === "shop" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setChildView("shop")}
+            >
+              길드 샵
+            </Button>
           </div>
 
-          {childView === "home" ? (
-            <HomeScreen profile={activeProfile} />
-          ) : (
-            <PlanScreen profileId={activeProfile.id} />
-          )}
+          {childView === "home" && <HomeScreen profile={activeProfile} />}
+          {childView === "plan" && <PlanScreen profileId={activeProfile.id} />}
+          {childView === "shop" && <ShopScreen profileId={activeProfile.id} />}
         </div>
       )}
     </main>

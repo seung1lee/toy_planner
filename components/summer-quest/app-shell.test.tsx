@@ -53,10 +53,11 @@ describe("AppShell — 프로필 전환 + 저장소 seam", () => {
 
     await user.click(screen.getByRole("radio", { name: "부모" }));
 
-    // 관리 화면이 즉시 나타나고, 인증 입력이 존재하지 않는다
+    // 관리 화면이 즉시 나타나고, 인증 입력(PIN·비밀번호)이 존재하지 않는다
+    // (보상 등록 폼의 일반 텍스트 입력은 인증 게이트가 아니므로 별개)
     expect(await screen.findByText("부모 · 길드 샵 관리")).toBeInTheDocument();
     expect(screen.queryByLabelText(/PIN|비밀번호|password/i)).toBeNull();
-    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(document.querySelector('input[type="password"]')).toBeNull();
   });
 
   it("[S13-3] 첫 진입 진행 지표는 EXP 0 · 코인 0 · Lv1", async () => {

@@ -29,7 +29,10 @@ export function seedState(): GameState {
       childA: initialProgress("childA"),
       childB: initialProgress("childB"),
     },
-    rewards: [],
+    rewards: [
+      { id: "seed-reward-chicken", name: "치킨 먹기", price: 50 },
+      { id: "seed-reward-game", name: "게임 1시간", price: 30 },
+    ],
     redemptions: [],
   };
 }

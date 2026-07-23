@@ -39,3 +39,17 @@ date: 2026-07-23
 **에피소드**: Task 1에서 `ChildProgress`에 `streakCount`/`lastAllCompleteDateISO`를 미리 넣었다(plan.md 데이터 모델 초안). Task 6에서 streak 로직을 구현하려니, "완료 시 +1, 해제 시 되돌리기(직전 값을 어떻게 복원?)"를 다뤄야 해서 복잡해졌다. `completions` 배열이 이미 전체 이력을 보관하고 있다는 걸 깨닫고, `computeStreak(plan, completions, today)` 순수 함수로 매번 재계산하는 쪽으로 바꿨다. 요약 필드 두 개를 타입에서 제거했고(`types/game.ts`, `config/game.ts`, `lib/game/progress.test.ts` 갱신), 완료 해제 시 아무 것도 안 해도 streak가 자동으로 맞다.
 
 **증거**: `lib/game/streak.ts` + `lib/game/streak.test.ts` (S7-1/S7-2/S7-3 4 tests pass), `git log` Task 6 커밋에서 `ChildProgress`의 두 필드 삭제 diff.
+
+---
+triggers: [queryByRole textbox, "PIN·로그인 게이트", "no auth gate", "textbox toBeNull", 인증 게이트 없음]
+status: verified
+scope: this-repo (summer-quest, S1-3류 "인증 없음" 판정 기준)
+date: 2026-07-23
+---
+## "인증 게이트 없음"을 "textbox가 하나도 없다"로 테스트하면, 그 화면에 정상 폼이 생기는 순간 거짓 실패한다
+
+**지시문**: "이 화면엔 PIN/로그인이 없다"를 증명할 때 `queryByRole("textbox")`가 null인지로 검증하지 마라. 그 화면에 나중에 다른 Task가 정당한 입력 폼(이름 검색, 보상 등록 등)을 추가하면 textbox가 생기고 테스트가 거짓으로 깨진다. 인증 여부는 `input[type="password"]` 존재나 "PIN"/"비밀번호" 라벨 유무처럼 인증에 고유한 신호로 좁혀서 검증하라.
+
+**에피소드**: Task 1에서 S1-3("부모 진입에 PIN·로그인 게이트가 없다")을 `queryByRole("textbox")`가 null임으로 검증했다. Task 8에서 부모 화면에 보상 등록 폼(이름·가격 Input)을 추가하자 이 테스트가 깨졌다 — 폼 자체는 기준과 무관한데 "textbox 없음"이라는 과도하게 넓은 조건 때문이었다. `document.querySelector('input[type="password"]')`로 좁혀서 해결.
+
+**증거**: `components/summer-quest/app-shell.test.tsx` — "[S1-3]" 테스트, Task 8 커밋에서 수정. 수정 후 48 tests pass.
