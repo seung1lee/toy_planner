@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { GameState } from "@/types/game";
 import type { StorageAdapter } from "@/types/storage";
 import { seedState } from "@/services/seed";
 import { GameProvider } from "@/hooks/useGame";
+import { Toaster } from "@/components/ui/sonner";
 import { HomeScreen } from "./home-screen";
 
 function adapterWith(state: GameState): StorageAdapter {
@@ -161,5 +162,53 @@ describe("HomeScreen — 전체 완료 메시지 + streak (S7, S8)", () => {
     }
 
     expect(await screen.findByText("streak 1일")).toBeInTheDocument();
+  });
+});
+
+describe("HomeScreen — 완료 연출 juice (S14)", () => {
+  it("[S14-1] 완료 시 획득량 팝업이 나타난다", async () => {
+    const state = stateWithMathPlan();
+    const profile = state.profiles.find((p) => p.id === "childA")!;
+    const user = userEvent.setup();
+    render(
+      <GameProvider adapter={adapterWith(state)} today={MON}>
+        <Toaster />
+        <HomeScreen profile={profile} />
+      </GameProvider>
+    );
+
+    // 완료 전: 퀘스트 항목의 보상 미리보기 배지 1개뿐
+    expect(screen.getAllByText("+10 EXP · +5코인")).toHaveLength(1);
+
+    await user.click(
+      await screen.findByRole("checkbox", { name: "수학 문제 완료" })
+    );
+
+    // 완료 후: 팝업이 추가로 나타나 동일 문구가 2개가 된다
+    expect(await screen.findAllByText("+10 EXP · +5코인")).toHaveLength(2);
+  });
+
+  it("[S14-3] 완료 순간 아바타에 반응 연출 상태가 부여된다", async () => {
+    const state = stateWithMathPlan();
+    const profile = state.profiles.find((p) => p.id === "childA")!;
+    const user = userEvent.setup();
+    render(
+      <GameProvider adapter={adapterWith(state)} today={MON}>
+        <HomeScreen profile={profile} />
+      </GameProvider>
+    );
+    await screen.findByText("EXP 0");
+
+    expect(document.querySelector('[data-reacting="true"]')).toBeNull();
+
+    await user.click(
+      await screen.findByRole("checkbox", { name: "수학 문제 완료" })
+    );
+
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-reacting="true"]')
+      ).not.toBeNull()
+    );
   });
 });

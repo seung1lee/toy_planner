@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import type { Profile } from "@/types/game";
 import { useGame } from "@/hooks/useGame";
 import { todayQuests, toISODate, isTodayFullyComplete } from "@/lib/game/today-quests";
@@ -8,6 +9,8 @@ import { QuestList } from "./quest-list";
 import { StatsPanel } from "./stats-panel";
 import { LevelUpDialog } from "./levelup-dialog";
 import { AllClearMessage } from "./all-clear-message";
+
+const REACTION_DURATION_MS = 600;
 
 export function HomeScreen({ profile }: { profile: Profile }) {
   const { state, today, levelUpEvent, dismissLevelUp } = useGame();
@@ -19,9 +22,29 @@ export function HomeScreen({ profile }: { profile: Profile }) {
   const quests = todayQuests(plan, today);
   const allClear = isTodayFullyComplete(quests, completions, toISODate(today));
 
+  // 완료 순간 아바타가 짧게 반응한다 (S14-3). 완료 수가 늘어난 순간만 감지 —
+  // 해제(감소)는 반응을 트리거하지 않는다.
+  const [reacting, setReacting] = React.useState(false);
+  const prevCompletionCountRef = React.useRef(completions.length);
+
+  React.useEffect(() => {
+    if (completions.length > prevCompletionCountRef.current) {
+      setReacting(true);
+      const timer = setTimeout(() => setReacting(false), REACTION_DURATION_MS);
+      prevCompletionCountRef.current = completions.length;
+      return () => clearTimeout(timer);
+    }
+    prevCompletionCountRef.current = completions.length;
+  }, [completions.length]);
+
   return (
     <div className="flex flex-col gap-4">
-      <StatsPanel name={profile.name} progress={progress} streak={streak} />
+      <StatsPanel
+        name={profile.name}
+        progress={progress}
+        streak={streak}
+        reacting={reacting}
+      />
 
       <AllClearMessage show={allClear} />
 

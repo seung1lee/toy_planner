@@ -16,12 +16,15 @@ export function AvatarDisplay({
   avatarKey,
   size = "default",
   emphasized = false,
+  reacting = false,
   className,
 }: {
   avatarKey: string;
   size?: "default" | "sm" | "lg";
   /** 레벨업 진화 연출 강조 상태 (S6-5) */
   emphasized?: boolean;
+  /** 퀘스트 완료 순간의 짧은 반응 연출 (S14-3) */
+  reacting?: boolean;
   className?: string;
 }) {
   const Icon = AVATAR_ICON[avatarKey] ?? Sprout;
@@ -30,8 +33,10 @@ export function AvatarDisplay({
       size={size}
       data-avatar={avatarKey}
       data-emphasized={emphasized}
+      data-reacting={reacting}
       className={cn(
         emphasized && "ring-2 ring-primary ring-offset-2",
+        reacting && "animate-bounce",
         className
       )}
     >

@@ -53,3 +53,31 @@ date: 2026-07-23
 **에피소드**: Task 1에서 S1-3("부모 진입에 PIN·로그인 게이트가 없다")을 `queryByRole("textbox")`가 null임으로 검증했다. Task 8에서 부모 화면에 보상 등록 폼(이름·가격 Input)을 추가하자 이 테스트가 깨졌다 — 폼 자체는 기준과 무관한데 "textbox 없음"이라는 과도하게 넓은 조건 때문이었다. `document.querySelector('input[type="password"]')`로 좁혀서 해결.
 
 **증거**: `components/summer-quest/app-shell.test.tsx` — "[S1-3]" 테스트, Task 8 커밋에서 수정. 수정 후 48 tests pass.
+
+---
+triggers: [matchMedia, "matchMedia is not a function", sonner, next-themes, jsdom, vitest.setup]
+status: verified
+scope: this-repo (vitest 4.x, jsdom, sonner, next-themes)
+date: 2026-07-23
+---
+## jsdom에는 matchMedia가 없다 — sonner·next-themes를 마운트하는 테스트에서 즉시 터진다
+
+**지시문**: `Toaster`(sonner) 또는 `next-themes`의 `useTheme`을 마운트하는 컴포넌트를 테스트할 때 `TypeError: window.matchMedia is not a function`이 나면, 컴포넌트 버그가 아니라 jsdom에 `matchMedia`가 없어서다. `vitest.setup.ts`에 전역 stub을 추가하라 (한 번만 하면 이후 모든 테스트에 적용됨).
+
+**에피소드**: Task 10에서 `<Toaster />`를 렌더하는 테스트(S14-1)가 `sonner/dist/index.mjs`에서 `window.matchMedia is not a function`으로 실패. `vitest.setup.ts`에 `window.matchMedia` mock을 추가해 해결.
+
+**증거**: `vitest.setup.ts` 수정 (Task 10 커밋), 수정 후 57 tests pass.
+
+---
+triggers: [shadcn Progress, "aria-valuenow", "progress-indicator", "components/ui 수정 금지", translateX]
+status: verified
+scope: this-repo (shadcn Progress 컴포넌트, radix-ui)
+date: 2026-07-23
+---
+## shadcn가 생성한 Progress는 value를 Radix Root에 전달하지 않는다 — aria-valuenow가 항상 비어 있다
+
+**지시문**: `components/ui/progress.tsx`로 만든 진행바를 테스트할 때 `getByRole("progressbar")`의 `aria-valuenow` 속성을 검증하지 마라 — 항상 `null`이다. 이 컴포넌트는 `value` prop을 destructure해서 `Indicator`의 `style.transform` 계산에만 쓰고 `<ProgressPrimitive.Root>`에는 전달하지 않는다(라디언트 자체 버그). `components/ui/*`는 shadcn-guard 규칙상 직접 고치지 않으므로, 시각적 채움 정도를 검증하려면 `[data-slot="progress-indicator"]`의 `style.transform` 값을 직접 확인하라.
+
+**에피소드**: Task 10에서 `ExpBar`(S14-2) 테스트가 `aria-valuenow`로 값 변화를 검증하려다 항상 `null`이라 실패. `document.querySelector('[data-slot="progress-indicator"]').style.transform`으로 바꿔 해결(`translateX(-(100-value)%)` 공식).
+
+**증거**: `components/summer-quest/exp-bar.test.tsx`, Task 10 커밋. 수정 후 57 tests pass.

@@ -1,6 +1,7 @@
 "use client";
 
 import { TentTree } from "lucide-react";
+import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
@@ -51,8 +52,12 @@ export function QuestList({ profileId }: { profileId: ProfileId }) {
               aria-label={`${q.name} 완료`}
               checked={completed}
               onCheckedChange={(checked) => {
-                if (checked === true) completeQuest(profileId, q.planItemId);
-                else uncompleteQuest(profileId, q.planItemId);
+                if (checked === true) {
+                  completeQuest(profileId, q.planItemId);
+                  toast(`+${EXP_PER_QUEST} EXP · +${COINS_PER_QUEST}코인`);
+                } else {
+                  uncompleteQuest(profileId, q.planItemId);
+                }
               }}
             />
             <span
