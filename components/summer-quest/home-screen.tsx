@@ -13,6 +13,7 @@ import { ProgressGauge } from "./progress-gauge";
 import { AchievementsDialog } from "./achievements-dialog";
 import { MilestoneDialog } from "./milestone-dialog";
 import { EncouragementMessage } from "./encouragement-message";
+import { WeatherWidget } from "./weather-widget";
 
 const REACTION_DURATION_MS = 600;
 
@@ -54,7 +55,12 @@ export function HomeScreen({ profile }: { profile: Profile }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <EncouragementMessage />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <EncouragementMessage />
+        </div>
+        <WeatherWidget />
+      </div>
 
       <StatsPanel
         name={profile.name}
