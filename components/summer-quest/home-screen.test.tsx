@@ -114,3 +114,52 @@ describe("HomeScreen — 레벨업 (S6, INV-1)", () => {
     expect(screen.getByText("Lv1")).toBeInTheDocument();
   });
 });
+
+describe("HomeScreen — 전체 완료 메시지 + streak (S7, S8)", () => {
+  it("[S8-1] 오늘 배정분을 전부 완료하면 전체 완료 메시지가 나타난다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+
+    expect(
+      screen.queryByText("오늘의 모험을 전부 클리어했어요! 🎉")
+    ).toBeNull(); // 아직 미완료 (S8-2 사전 상태)
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox);
+    }
+
+    expect(
+      await screen.findByText("오늘의 모험을 전부 클리어했어요! 🎉")
+    ).toBeInTheDocument();
+  });
+
+  it("[S8-2] 하나라도 미완료면 전체 완료 메시지가 나타나지 않는다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+
+    // 마지막 하나를 제외하고 완료
+    for (const checkbox of checkboxes.slice(0, -1)) {
+      await user.click(checkbox);
+    }
+
+    expect(
+      screen.queryByText("오늘의 모험을 전부 클리어했어요! 🎉")
+    ).toBeNull();
+  });
+
+  it("[S7-1] 전체완료 시 streak가 1일로 반영된다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+
+    expect(screen.getByText("streak 0일")).toBeInTheDocument();
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox);
+    }
+
+    expect(await screen.findByText("streak 1일")).toBeInTheDocument();
+  });
+});

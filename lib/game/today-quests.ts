@@ -1,5 +1,5 @@
 // 순수 퀘스트 생성 로직. types에만 의존한다 (DOM·저장소 무관).
-import type { PlanItem, Weekday } from "@/types/game";
+import type { PlanItem, QuestCompletion, Weekday } from "@/types/game";
 
 /** JS Date.getDay(): 0=일 … 6=토. 월(1)~금(5)만 Weekday, 주말이면 null. */
 export function weekdayOf(date: Date): Weekday | null {
@@ -35,4 +35,19 @@ export function todayQuests(plan: PlanItem[], date: Date): TodayQuest[] {
       name: item.name,
       dailyGoal: item.dailyGoal,
     }));
+}
+
+/**
+ * 그 날 배정된 퀘스트가 하나 이상이고 전부 완료됐는지 판정한다.
+ * 배정된 퀘스트가 없으면(주말 등) false — "완료할 것이 없음"은 "전체 완료"가 아니다.
+ */
+export function isTodayFullyComplete(
+  quests: TodayQuest[],
+  completions: QuestCompletion[],
+  dateISO: string
+): boolean {
+  if (quests.length === 0) return false;
+  return quests.every((q) =>
+    completions.some((c) => c.planItemId === q.planItemId && c.dateISO === dateISO)
+  );
 }

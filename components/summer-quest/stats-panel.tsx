@@ -1,5 +1,6 @@
 "use client";
 
+import { Flame } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ChildProgress } from "@/types/game";
 import { levelForExp } from "@/lib/game/level";
@@ -8,9 +9,11 @@ import { AvatarDisplay } from "./avatar-display";
 export function StatsPanel({
   name,
   progress,
+  streak,
 }: {
   name: string;
   progress: ChildProgress;
+  streak: number;
 }) {
   const tier = levelForExp(progress.exp);
   return (
@@ -28,6 +31,10 @@ export function StatsPanel({
           <div className="flex gap-6">
             <span>EXP {progress.exp}</span>
             <span>코인 {progress.coins}</span>
+            <span className="flex items-center gap-1">
+              <Flame className="size-4" />
+              streak {streak}일
+            </span>
           </div>
         </div>
       </CardContent>

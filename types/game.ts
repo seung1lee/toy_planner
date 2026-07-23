@@ -31,9 +31,11 @@ export interface ChildProgress {
   profileId: ProfileId;
   exp: number;
   coins: number;
-  streakCount: number;
-  /** 마지막으로 "그 날 전체 완료"한 날 (streak 연속 판정용) */
-  lastAllCompleteDateISO: string | null;
+  /**
+   * streak는 별도 필드로 저장하지 않는다 — plan·completions·today로부터
+   * lib/game/streak.ts의 computeStreak()가 매번 순수하게 파생한다.
+   * 완료 해제(S5)로 과거 완료가 취소돼도 항상 최신 상태와 일치하므로 더 안전하다.
+   */
   unlockedAchievementIds: string[];
   /** 이미 보너스를 지급한 마일스톤 일수 (중복 방지) */
   awardedMilestones: number[];

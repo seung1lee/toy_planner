@@ -49,10 +49,10 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 - profileId (required)
 - exp (number, ≥0)
 - coins (number, ≥0)
-- streakCount (number)
-- lastAllCompleteDateISO (streak 연속 판정용)
 - unlockedAchievementIds → string[]
 - awardedMilestones → number[] (중복 지급 방지)
+
+> **Task 6 변경**: `streakCount`/`lastAllCompleteDateISO`는 저장하지 않는다. streak는 `lib/game/streak.ts`의 `computeStreak(plan, completions, today)`가 plan·completions·today로부터 매번 순수하게 파생한다. 완료 해제(S5)로 과거 완료가 취소돼도 별도 롤백 로직 없이 항상 최신과 일치하는 게 장점이라 Task 1의 초안 필드를 제거했다.
 
 ### Reward
 - id, name, price (required)
@@ -179,7 +179,7 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Task 6: Streak + 전체 완료 메시지
+### ✅ Task 6: Streak + 전체 완료 메시지
 
 - **담당 판정 기준**: S7-1, S7-2, S7-3, S8-1, S8-2
 - **크기**: M

@@ -35,8 +35,6 @@ export function initialProgress(profileId: ProfileId): ChildProgress {
     profileId,
     exp: 0,
     coins: 0,
-    streakCount: 0,
-    lastAllCompleteDateISO: null,
     unlockedAchievementIds: [],
     awardedMilestones: [],
   };

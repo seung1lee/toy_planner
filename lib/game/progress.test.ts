@@ -7,8 +7,6 @@ function progress(exp: number, coins: number): ChildProgress {
     profileId: "childA",
     exp,
     coins,
-    streakCount: 0,
-    lastAllCompleteDateISO: null,
     unlockedAchievementIds: [],
     awardedMilestones: [],
   };

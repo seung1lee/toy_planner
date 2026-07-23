@@ -25,3 +25,17 @@ date: 2026-07-23
 **에피소드**: Task 5(레벨업 다이얼로그)에서 `data-emphasized="true"` 속성을 `container.querySelector`로 검증하다가 "expected null not to be null"로 실패. Dialog의 `DialogContent`가 Radix Portal로 `document.body`에 별도로 붙기 때문에 render()가 반환한 로컬 `container`(테스트별 wrapper div) 안에는 존재하지 않았다. `document.querySelector`로 바꾸자 통과.
 
 **증거**: `components/summer-quest/home-screen.test.tsx` — "[S6-1][S6-2][S6-3][S6-5] EXP 50 도달 시..." 테스트, 수정 후 33 tests pass.
+
+---
+triggers: [streak, "완전 파생", "derived state", ChildProgress, "롤백", uncomplete, 완료 해제]
+status: verified
+scope: this-repo (summer-quest 도메인 로직)
+date: 2026-07-23
+---
+## 완료 이력 전체를 들고 있다면, 파생 가능한 집계 필드는 저장하지 말고 매번 계산하라
+
+**지시문**: "완료/취소 가능한 이벤트 로그(completions)"가 이미 전체 보관되고 있는데 그 위에 "현재 streak" 같은 요약 카운터를 따로 필드로 두려는 유혹이 들면, 그 카운터가 이벤트 로그로부터 순수하게 재계산 가능한지 먼저 확인하라. 가능하면 필드를 두지 말고 파생 함수로 대체한다. 완료 해제(undo) 경로가 있는 도메인에서는 요약 필드 증분·롤백 로직이 항상 두 배로 늘고, 롤백을 깜빡하면 조용히 데이터가 어긋난다.
+
+**에피소드**: Task 1에서 `ChildProgress`에 `streakCount`/`lastAllCompleteDateISO`를 미리 넣었다(plan.md 데이터 모델 초안). Task 6에서 streak 로직을 구현하려니, "완료 시 +1, 해제 시 되돌리기(직전 값을 어떻게 복원?)"를 다뤄야 해서 복잡해졌다. `completions` 배열이 이미 전체 이력을 보관하고 있다는 걸 깨닫고, `computeStreak(plan, completions, today)` 순수 함수로 매번 재계산하는 쪽으로 바꿨다. 요약 필드 두 개를 타입에서 제거했고(`types/game.ts`, `config/game.ts`, `lib/game/progress.test.ts` 갱신), 완료 해제 시 아무 것도 안 해도 streak가 자동으로 맞다.
+
+**증거**: `lib/game/streak.ts` + `lib/game/streak.test.ts` (S7-1/S7-2/S7-3 4 tests pass), `git log` Task 6 커밋에서 `ChildProgress`의 두 필드 삭제 diff.
