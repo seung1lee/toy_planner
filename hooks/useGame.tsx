@@ -13,6 +13,7 @@ import { localStorageAdapter } from "@/services/localStorageAdapter";
 import { seedState } from "@/services/seed";
 import { toISODate } from "@/lib/game/today-quests";
 import { applyComplete, applyUncomplete } from "@/lib/game/progress";
+import { canAfford, applyRedeem } from "@/lib/game/redeem";
 import { levelForExp } from "@/lib/game/level";
 import { LEVELS, type LevelTier } from "@/config/game";
 
@@ -32,6 +33,8 @@ interface GameContextValue {
   removePlanItem: (profileId: ProfileId, itemId: string) => void;
   addReward: (reward: Reward) => void;
   removeReward: (rewardId: string) => void;
+  isRewardRedeemed: (rewardId: string) => boolean;
+  redeemReward: (profileId: ProfileId, rewardId: string) => void;
   isQuestCompleted: (
     profileId: ProfileId,
     planItemId: string,
@@ -118,6 +121,51 @@ export function GameProvider({
       rewards: s.rewards.filter((r) => r.id !== rewardId),
     }));
   }, []);
+
+  const isRewardRedeemed = React.useCallback(
+    (rewardId: string) =>
+      state.redemptions.some((r) => r.rewardId === rewardId),
+    [state.redemptions]
+  );
+
+  const redeemReward = React.useCallback(
+    (profileId: ProfileId, rewardId: string) => {
+      const dateISO = toISODate(today);
+      setState((s) => {
+        const reward = s.rewards.find((r) => r.id === rewardId);
+        if (!reward) return s;
+        const alreadyRedeemed = s.redemptions.some(
+          (r) => r.rewardId === rewardId
+        );
+        const progress = s.progress[profileId];
+        if (!progress || alreadyRedeemed || !canAfford(progress.coins, reward.price)) {
+          return s; // 이미 교환됨 또는 코인 부족 — 무시
+        }
+        return {
+          ...s,
+          progress: {
+            ...s.progress,
+            [profileId]: {
+              ...progress,
+              coins: applyRedeem(progress.coins, reward.price),
+            },
+          },
+          redemptions: [
+            ...s.redemptions,
+            {
+              id: crypto.randomUUID(),
+              profileId,
+              rewardId,
+              rewardName: reward.name,
+              price: reward.price,
+              dateISO,
+            },
+          ],
+        };
+      });
+    },
+    [today]
+  );
 
   const isQuestCompleted = React.useCallback(
     (profileId: ProfileId, planItemId: string, dateISO: string) =>
@@ -219,6 +267,8 @@ export function GameProvider({
       removePlanItem,
       addReward,
       removeReward,
+      isRewardRedeemed,
+      redeemReward,
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,
@@ -233,6 +283,8 @@ export function GameProvider({
       removePlanItem,
       addReward,
       removeReward,
+      isRewardRedeemed,
+      redeemReward,
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,

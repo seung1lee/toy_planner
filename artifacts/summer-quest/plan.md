@@ -15,6 +15,7 @@
 | 완료 회수 시 코인 (spec 미결정 해소) | 코인은 **0에서 clamp**(음수 불가), 완료 해제는 항상 허용, 소비된 교환은 자동 회수 안 함 | 가장 단순하고 INV-4(음수 불가) 유지. 데모 빈도 낮은 엣지 |
 | config 범위 | 레벨 정책 + 게임 상수(EXP·코인 지급값·보너스·업적 목록·마일스톤 임계)를 `config/`에 데이터로 | idea.md "하드코딩 금지" + 재미 요소가 데이터 주도 목록을 요구. 풀 엔진화는 하지 않음 |
 | 업적 화면 배치 | 홈에서 진입하는 Dialog(모달) | wireframe의 별도 "페이지"가 아니라 홈의 오버레이 (사용자 확인 완료) |
+| 보상 재고 모델 (Task 9) | Reward는 전역 1회성 교환권이다 — 누구든 한 번 교환하면 모든 프로필에서 "교환됨"으로 잠긴다. 자녀별 독립 재고 없음 | idea.md "승인 플로우는 최소" + wireframe의 shop-states 화면이 카드당 단일 상태(교환됨/부족)만 그림. 재고·수량 개념은 spec에 없어 가장 단순한 해석을 택함 |
 | 완료/레벨업/마일스톤 연출 | 획득 팝업·토스트(`sonner`), 레벨업·마일스톤은 Dialog, 컨페티는 CSS 연출 요소 | 새 애니메이션 라이브러리 없이 shadcn + CSS로. idea.md의 미설치 라이브러리 방침 |
 
 ## 인프라 리소스
@@ -231,7 +232,7 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Task 9: 보상 교환 + 코인 흐름
+### ✅ Task 9: 보상 교환 + 코인 흐름
 
 - **담당 판정 기준**: S10-1, S10-2, S10-3, S11-1, S11-2, INV-4
 - **크기**: M
@@ -247,9 +248,9 @@ None. (저장소는 브라우저 localStorage, 애플리케이션 코드 내 어
 
 ---
 
-### Checkpoint: Tasks 8~9 이후 (코인 루프)
-- [ ] `bun run test` / `bun run build` / `scripts/spec-coverage.sh summer-quest --tests`
-- [ ] 부모 등록→자녀 교환→코인 차감→부모 내역이 end-to-end로 동작
+### ✅ Checkpoint: Tasks 8~9 이후 (코인 루프)
+- [x] `bun run test` (54 passed) / `bun run build` (성공) / `scripts/spec-coverage.sh summer-quest --tests` (미인용은 전부 미구현 Task 10~13 소관)
+- [x] 부모 등록→자녀 교환→코인 차감→부모 내역이 end-to-end로 동작 (실제 dev 서버 확인: 코인 60→10, "교환됨"·"코인이 부족해요" 표시, 부모 내역에 "자녀A · 치킨 먹기 · 50코인")
 
 ---
 

@@ -2,6 +2,7 @@
 
 import { RewardForm } from "./reward-form";
 import { RewardList } from "./reward-list";
+import { RedemptionHistory } from "./redemption-history";
 
 export function ParentScreen() {
   return (
@@ -11,6 +12,10 @@ export function ParentScreen() {
       <div>
         <h3 className="mb-2 text-sm font-bold">등록된 보상</h3>
         <RewardList />
+      </div>
+      <div>
+        <h3 className="mb-2 text-sm font-bold">교환 내역</h3>
+        <RedemptionHistory />
       </div>
     </div>
   );
