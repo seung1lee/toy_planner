@@ -25,6 +25,19 @@ function stateWithMathPlan(): GameState {
   return s;
 }
 
+function stateWithFiveMondayItems(): GameState {
+  const s = seedState();
+  s.plans.childA = Array.from({ length: 5 }, (_, i) => ({
+    id: `item-${i}`,
+    name: `할일${i}`,
+    dailyGoal: 1,
+    weekdays: [1] as const,
+  }));
+  s.progress.childA.exp = 0;
+  s.progress.childA.coins = 0;
+  return s;
+}
+
 function renderHome(today: Date, state: GameState) {
   const profile = state.profiles.find((p) => p.id === "childA")!;
   return render(
@@ -60,5 +73,44 @@ describe("HomeScreen — 완료 시 성장 반영", () => {
 
     expect(await screen.findByText("EXP 0")).toBeInTheDocument();
     expect(screen.getByText("코인 0")).toBeInTheDocument();
+  });
+});
+
+describe("HomeScreen — 레벨업 (S6, INV-1)", () => {
+  it("[S6-1][S6-2][S6-3][S6-5] EXP 50 도달 시 레벨업 다이얼로그 · 아바타 강조가 나타난다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+    expect(checkboxes).toHaveLength(5);
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox); // 5 × +10 EXP = 50 → Lv2 임계 도달
+    }
+
+    expect(await screen.findByText("🎉 레벨업! 🎉")).toBeInTheDocument();
+    expect(screen.getAllByText("Lv2").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("견습 모험가").length).toBeGreaterThan(0);
+    // Dialog는 Portal로 document.body에 렌더되므로 container가 아닌 document를 조회한다
+    expect(
+      document.querySelector('[data-emphasized="true"]')
+    ).not.toBeNull();
+  });
+
+  it("[S6-4][INV-1] 완료 해제로 EXP가 49로 내려가면 Lv1로 되돌아간다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox);
+    }
+    await screen.findByText("🎉 레벨업! 🎉");
+    await user.click(screen.getByRole("button", { name: "계속하기" }));
+
+    // 하나 해제 → EXP 40 → 다시 Lv1
+    await user.click(checkboxes[0]);
+
+    expect(await screen.findByText("EXP 40")).toBeInTheDocument();
+    expect(screen.getByText("Lv1")).toBeInTheDocument();
   });
 });

@@ -12,6 +12,14 @@ import { localStorageAdapter } from "@/services/localStorageAdapter";
 import { seedState } from "@/services/seed";
 import { toISODate } from "@/lib/game/today-quests";
 import { applyComplete, applyUncomplete } from "@/lib/game/progress";
+import { levelForExp } from "@/lib/game/level";
+import { LEVELS, type LevelTier } from "@/config/game";
+
+export interface LevelUpEvent {
+  profileId: ProfileId;
+  from: LevelTier;
+  to: LevelTier;
+}
 
 interface GameContextValue {
   state: GameState;
@@ -28,6 +36,9 @@ interface GameContextValue {
   ) => boolean;
   completeQuest: (profileId: ProfileId, planItemId: string) => void;
   uncompleteQuest: (profileId: ProfileId, planItemId: string) => void;
+  /** 방금 발생한 레벨업 이벤트 (표시 후 dismissLevelUp으로 닫는다) */
+  levelUpEvent: LevelUpEvent | null;
+  dismissLevelUp: () => void;
 }
 
 const GameContext = React.createContext<GameContextValue | null>(null);
@@ -158,6 +169,32 @@ export function GameProvider({
     [today]
   );
 
+  // 레벨업 감지: 프로필별 이전 레벨을 추적해, 상승을 건널 때만 이벤트를 낸다.
+  // 하락(회수)은 조용히 반영되고 다이얼로그를 띄우지 않는다 (S6-4).
+  const [levelUpEvent, setLevelUpEvent] = React.useState<LevelUpEvent | null>(
+    null
+  );
+  const prevLevelsRef = React.useRef<Record<string, number>>({});
+
+  React.useEffect(() => {
+    if (!hydrated) return;
+    for (const profile of state.profiles) {
+      if (profile.role !== "child") continue;
+      const progress = state.progress[profile.id];
+      if (!progress) continue;
+      const tier = levelForExp(progress.exp);
+      const prevLevel = prevLevelsRef.current[profile.id];
+      if (prevLevel !== undefined && tier.level > prevLevel) {
+        const fromTier =
+          LEVELS.find((t) => t.level === prevLevel) ?? LEVELS[0];
+        setLevelUpEvent({ profileId: profile.id, from: fromTier, to: tier });
+      }
+      prevLevelsRef.current[profile.id] = tier.level;
+    }
+  }, [state.profiles, state.progress, hydrated]);
+
+  const dismissLevelUp = React.useCallback(() => setLevelUpEvent(null), []);
+
   const value = React.useMemo<GameContextValue>(
     () => ({
       state,
@@ -169,6 +206,8 @@ export function GameProvider({
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,
+      levelUpEvent,
+      dismissLevelUp,
     }),
     [
       state,
@@ -179,6 +218,8 @@ export function GameProvider({
       isQuestCompleted,
       completeQuest,
       uncompleteQuest,
+      levelUpEvent,
+      dismissLevelUp,
     ]
   );
 
