@@ -1,16 +1,22 @@
 "use client";
 
 import * as React from "react";
-import type { GameState, Profile, ProfileId } from "@/types/game";
+import type {
+  GameState,
+  PlanItem,
+  Profile,
+  ProfileId,
+} from "@/types/game";
 import type { StorageAdapter } from "@/types/storage";
 import { localStorageAdapter } from "@/services/localStorageAdapter";
 import { seedState } from "@/services/seed";
 
 interface GameContextValue {
   state: GameState;
-  setState: React.Dispatch<React.SetStateAction<GameState>>;
   activeProfileId: ProfileId;
   setActiveProfileId: (id: ProfileId) => void;
+  addPlanItem: (profileId: ProfileId, item: PlanItem) => void;
+  removePlanItem: (profileId: ProfileId, itemId: string) => void;
 }
 
 const GameContext = React.createContext<GameContextValue | null>(null);
@@ -32,7 +38,8 @@ export function GameProvider({
     React.useState<ProfileId>(initialActiveProfileId);
   const [hydrated, setHydrated] = React.useState(false);
 
-  // 마운트 후 저장소에서 로드 (SSR 불일치 회피)
+  // 마운트 후 저장소에서 로드. hydrated 전에는 children을 렌더하지 않아
+  // (1) SSR 불일치와 (2) seed→loaded 깜빡임을 모두 피한다.
   React.useEffect(() => {
     const loaded = adapter.load();
     if (loaded) setState(loaded);
@@ -44,10 +51,46 @@ export function GameProvider({
     if (hydrated) adapter.save(state);
   }, [state, hydrated, adapter]);
 
-  const value = React.useMemo<GameContextValue>(
-    () => ({ state, setState, activeProfileId, setActiveProfileId }),
-    [state, activeProfileId]
+  const addPlanItem = React.useCallback(
+    (profileId: ProfileId, item: PlanItem) => {
+      setState((s) => ({
+        ...s,
+        plans: {
+          ...s.plans,
+          [profileId]: [...(s.plans[profileId] ?? []), item],
+        },
+      }));
+    },
+    []
   );
+
+  const removePlanItem = React.useCallback(
+    (profileId: ProfileId, itemId: string) => {
+      setState((s) => ({
+        ...s,
+        plans: {
+          ...s.plans,
+          [profileId]: (s.plans[profileId] ?? []).filter(
+            (i) => i.id !== itemId
+          ),
+        },
+      }));
+    },
+    []
+  );
+
+  const value = React.useMemo<GameContextValue>(
+    () => ({
+      state,
+      activeProfileId,
+      setActiveProfileId,
+      addPlanItem,
+      removePlanItem,
+    }),
+    [state, activeProfileId, addPlanItem, removePlanItem]
+  );
+
+  if (!hydrated) return null;
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

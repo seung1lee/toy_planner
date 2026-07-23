@@ -13,7 +13,17 @@ export function seedState(): GameState {
       { id: "childB", name: "자녀B", role: "child" },
       { id: "parent", name: "부모", role: "parent" },
     ],
-    plans: { childA: [], childB: [] },
+    plans: {
+      childA: [
+        { id: "seed-a-math", name: "수학 문제", dailyGoal: 20, weekdays: [1, 3, 5] },
+        { id: "seed-a-eng", name: "영어 단어", dailyGoal: 30, weekdays: [1, 2, 3, 4, 5] },
+        { id: "seed-a-read", name: "독서", dailyGoal: 30, weekdays: [2, 4] },
+      ],
+      childB: [
+        { id: "seed-b-piano", name: "피아노 연습", dailyGoal: 30, weekdays: [1, 3] },
+        { id: "seed-b-jump", name: "줄넘기", dailyGoal: 100, weekdays: [1, 2, 3, 4, 5] },
+      ],
+    },
     completions: { childA: [], childB: [] },
     progress: {
       childA: initialProgress("childA"),
