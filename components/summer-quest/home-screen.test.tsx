@@ -26,6 +26,21 @@ function stateWithMathPlan(): GameState {
   return s;
 }
 
+/**
+ * 항목 2개(월요일) — 하나만 완료해도 "오늘 전체완료"가 되지 않도록 해 S15 전체완료
+ * 보너스가 끼어들지 않게 한다. S4/S5(개별 완료·해제) 단위 검증을 S15와 분리하기 위함.
+ */
+function stateWithTwoMondayItems(): GameState {
+  const s = seedState();
+  s.plans.childA = [
+    { id: "math", name: "수학 문제", dailyGoal: 20, weekdays: [1] },
+    { id: "eng", name: "영어 단어", dailyGoal: 30, weekdays: [1] },
+  ];
+  s.progress.childA.exp = 0;
+  s.progress.childA.coins = 0;
+  return s;
+}
+
 function stateWithFiveMondayItems(): GameState {
   const s = seedState();
   s.plans.childA = Array.from({ length: 5 }, (_, i) => ({
@@ -51,7 +66,7 @@ function renderHome(today: Date, state: GameState) {
 describe("HomeScreen — 완료 시 성장 반영", () => {
   it("[S4-2][S4-3] 완료 시 EXP 10 · 코인 5로 반영된다", async () => {
     const user = userEvent.setup();
-    renderHome(MON, stateWithMathPlan());
+    renderHome(MON, stateWithTwoMondayItems());
     await screen.findByText("EXP 0");
 
     await user.click(screen.getByRole("checkbox", { name: "수학 문제 완료" }));
@@ -62,7 +77,7 @@ describe("HomeScreen — 완료 시 성장 반영", () => {
 
   it("[S5-2][S5-3] 완료 해제 시 EXP·코인이 회수되어 0이 된다", async () => {
     const user = userEvent.setup();
-    renderHome(MON, stateWithMathPlan());
+    renderHome(MON, stateWithTwoMondayItems());
     const checkbox = await screen.findByRole("checkbox", {
       name: "수학 문제 완료",
     });
@@ -210,5 +225,34 @@ describe("HomeScreen — 완료 연출 juice (S14)", () => {
         document.querySelector('[data-reacting="true"]')
       ).not.toBeNull()
     );
+  });
+});
+
+describe("HomeScreen — 진행 게이지 + 전체완료 보너스·컨페티 (S15)", () => {
+  it("[S15-1] 완료 개수에 따라 진행 게이지가 '완료 수 / 전체 수'로 표시된다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+    expect(screen.getByText("0 / 5")).toBeInTheDocument();
+
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+
+    expect(await screen.findByText("2 / 5")).toBeInTheDocument();
+  });
+
+  it("[S15-2][S15-3][S15-4] 마지막 완료 시 게이지 만석, 보너스 지급, 컨페티가 나타난다", async () => {
+    const user = userEvent.setup();
+    renderHome(MON, stateWithFiveMondayItems());
+    const checkboxes = await screen.findAllByRole("checkbox");
+
+    for (const checkbox of checkboxes) {
+      await user.click(checkbox);
+    }
+
+    expect(await screen.findByText("5 / 5")).toBeInTheDocument(); // S15-2
+    // 완료당 코인 5 × 5개 + 전체완료 보너스 10 = 35
+    expect(await screen.findByText("코인 35")).toBeInTheDocument(); // S15-3
+    expect(screen.getByTestId("confetti")).toBeInTheDocument(); // S15-4
   });
 });

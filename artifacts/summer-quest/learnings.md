@@ -81,3 +81,17 @@ date: 2026-07-23
 **에피소드**: Task 10에서 `ExpBar`(S14-2) 테스트가 `aria-valuenow`로 값 변화를 검증하려다 항상 `null`이라 실패. `document.querySelector('[data-slot="progress-indicator"]').style.transform`으로 바꿔 해결(`translateX(-(100-value)%)` 공식).
 
 **증거**: `components/summer-quest/exp-bar.test.tsx`, Task 10 커밋. 수정 후 57 tests pass.
+
+---
+triggers: [single-item plan, "전체완료 보너스", all-clear, "코인 5", 단일 항목 fixture, 테스트 fixture 결합]
+status: verified
+scope: this-repo (summer-quest, S4/S5 vs S15 fixture 결합)
+date: 2026-07-23
+---
+## "완료 시 전체완료로 이어지는" 이벤트가 생기면, 단일 항목짜리 테스트 fixture가 조용히 깨진다
+
+**지시문**: 어떤 Task가 "오늘 배정분 전체완료" 같은 파생 이벤트(보너스·업적·마일스톤 등)를 추가하면, 기존 테스트 중 계획 항목이 정확히 1개뿐인 fixture(`stateWithMathPlan` 류)로 "그 항목 하나만 완료"를 검증하던 테스트는 의도치 않게 "오늘 전체완료"도 함께 트리거해 추가 보상이 섞여 값이 달라진다. 개별 완료(S4/S5류)를 전체완료 파생 이벤트와 분리해서 검증하려면, 항목이 2개 이상이고 그중 하나만 완료한 상태로 유지되는 별도 fixture를 써라. 기존 단일 항목 fixture는 그 자체로 "완료=전체완료"를 검증하는 테스트(S14 등)에는 그대로 남겨도 된다.
+
+**에피소드**: Task 11에서 전체완료 보너스(S15-3)를 추가하자, Task 4의 `stateWithMathPlan()`(항목 1개) 기반 테스트 "[S4-2][S4-3] 완료 시 EXP 10·코인 5"가 깨졌다 — 항목을 완료하는 순간 그게 곧 "오늘 전체완료"이기도 해서 보너스 +10이 더해져 코인이 5가 아니라 15가 됐다. `stateWithTwoMondayItems()`(항목 2개, 하나는 미완료로 남김)를 새로 만들어 S4/S5 테스트만 교체하고, S14가 의존하는 단일 항목 fixture는 그대로 뒀다.
+
+**증거**: `components/summer-quest/home-screen.test.tsx`, Task 11 커밋. 수정 후 61 tests pass.

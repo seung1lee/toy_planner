@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { ChildProgress } from "@/types/game";
-import { applyComplete, applyUncomplete } from "./progress";
+import {
+  applyComplete,
+  applyUncomplete,
+  applyAllClearBonus,
+  revokeAllClearBonus,
+} from "./progress";
 
 function progress(exp: number, coins: number): ChildProgress {
   return {
@@ -29,5 +34,15 @@ describe("progress — EXP·코인 지급/회수", () => {
     const result = applyUncomplete(progress(0, 0));
     expect(result.exp).toBe(0);
     expect(result.coins).toBe(0);
+  });
+
+  it("[S15-3] 전체완료 보너스가 코인에 추가 지급된다", () => {
+    const result = applyAllClearBonus(progress(0, 20));
+    expect(result.coins).toBe(30); // +10
+  });
+
+  it("전체완료 보너스가 대칭적으로 회수되고 0 미만으로 내려가지 않는다", () => {
+    expect(revokeAllClearBonus(progress(0, 30)).coins).toBe(20);
+    expect(revokeAllClearBonus(progress(0, 0)).coins).toBe(0); // clamp
   });
 });

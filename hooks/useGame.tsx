@@ -11,11 +11,20 @@ import type {
 import type { StorageAdapter } from "@/types/storage";
 import { localStorageAdapter } from "@/services/localStorageAdapter";
 import { seedState } from "@/services/seed";
-import { toISODate } from "@/lib/game/today-quests";
-import { applyComplete, applyUncomplete } from "@/lib/game/progress";
+import { toISODate, todayQuests, isTodayFullyComplete } from "@/lib/game/today-quests";
+import {
+  applyComplete,
+  applyUncomplete,
+  applyAllClearBonus,
+  revokeAllClearBonus,
+} from "@/lib/game/progress";
 import { canAfford, applyRedeem } from "@/lib/game/redeem";
 import { levelForExp } from "@/lib/game/level";
-import { LEVELS, type LevelTier } from "@/config/game";
+import {
+  LEVELS,
+  type LevelTier,
+  ALL_CLEAR_BONUS_ITEM_ID,
+} from "@/config/game";
 
 export interface LevelUpEvent {
   profileId: ProfileId;
@@ -188,16 +197,28 @@ export function GameProvider({
         ) {
           return s;
         }
+        const updated = [...existing, { profileId, planItemId, dateISO }];
+        let progress = applyComplete(s.progress[profileId]);
+        let completions = updated;
+
+        // 오늘 배정분 전체완료로 방금 전환됐다면 보너스를 1회 지급한다 (S15-3)
+        const quests = todayQuests(s.plans[profileId] ?? [], today);
+        const alreadyAwarded = updated.some(
+          (c) =>
+            c.planItemId === ALL_CLEAR_BONUS_ITEM_ID && c.dateISO === dateISO
+        );
+        if (!alreadyAwarded && isTodayFullyComplete(quests, updated, dateISO)) {
+          progress = applyAllClearBonus(progress);
+          completions = [
+            ...updated,
+            { profileId, planItemId: ALL_CLEAR_BONUS_ITEM_ID, dateISO },
+          ];
+        }
+
         return {
           ...s,
-          completions: {
-            ...s.completions,
-            [profileId]: [...existing, { profileId, planItemId, dateISO }],
-          },
-          progress: {
-            ...s.progress,
-            [profileId]: applyComplete(s.progress[profileId]),
-          },
+          completions: { ...s.completions, [profileId]: completions },
+          progress: { ...s.progress, [profileId]: progress },
         };
       });
     },
@@ -213,18 +234,31 @@ export function GameProvider({
           (c) => c.planItemId === planItemId && c.dateISO === dateISO
         );
         if (!wasCompleted) return s; // 완료 상태가 아니면 무시
+
+        const updated = existing.filter(
+          (c) => !(c.planItemId === planItemId && c.dateISO === dateISO)
+        );
+        let progress = applyUncomplete(s.progress[profileId]);
+        let completions = updated;
+
+        // 전체완료가 깨지면 보너스도 대칭적으로 회수한다 (INV-1 정신)
+        const quests = todayQuests(s.plans[profileId] ?? [], today);
+        const bonusWasAwarded = updated.some(
+          (c) =>
+            c.planItemId === ALL_CLEAR_BONUS_ITEM_ID && c.dateISO === dateISO
+        );
+        if (bonusWasAwarded && !isTodayFullyComplete(quests, updated, dateISO)) {
+          progress = revokeAllClearBonus(progress);
+          completions = updated.filter(
+            (c) =>
+              !(c.planItemId === ALL_CLEAR_BONUS_ITEM_ID && c.dateISO === dateISO)
+          );
+        }
+
         return {
           ...s,
-          completions: {
-            ...s.completions,
-            [profileId]: existing.filter(
-              (c) => !(c.planItemId === planItemId && c.dateISO === dateISO)
-            ),
-          },
-          progress: {
-            ...s.progress,
-            [profileId]: applyUncomplete(s.progress[profileId]),
-          },
+          completions: { ...s.completions, [profileId]: completions },
+          progress: { ...s.progress, [profileId]: progress },
         };
       });
     },
