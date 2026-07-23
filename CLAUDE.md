@@ -3,7 +3,7 @@
 ### summer-quest (Summer Quest RPG)
 - **상태**: spec → wireframe → plan → 구현(Task 1~13) → E2E까지 완료. 브랜치 `feat/summer-quest`.
 - **핵심 루프**: 이번 주 계획(요일 선택) → 오늘의 퀘스트(자동 생성) → 완료 시 EXP·코인·레벨업·아바타·streak·업적·마일스톤·전체완료 보너스·컨페티 → 길드 샵 교환 → 부모 관리.
-- **검증**: Vitest 75개, Playwright E2E 1개(spec.md 11단계 전체) — 전부 통과, 3회 연속 무플레이키.
+- **검증**: Vitest 79개, Playwright E2E 2개(spec.md 11단계 전체 + smoke) — 전부 통과.
 - **PR**: https://github.com/seung1lee/toy_planner/pull/1
 - **추가 기능 진행 (사용자 요청, 우선순위대로)**:
   - ✅ 브라우저 탭 제목 "Tony Planner"
@@ -14,6 +14,7 @@
   - ✅ 오렌지/퍼플 "모험" 테마 (CSS 변수만 조정, components/ui 미수정)
   - ✅ 자녀 프로필 동적 추가 (ProfileId를 string으로 완화)
   - ✅ 날씨 정보 표시 (Open-Meteo, API 키 불필요 — geolocation 우선, 서울 fallback)
+  - ✅ 날씨 기반 운동 퀘스트 추천
 - 자세한 내용: [artifacts/summer-quest/spec.md](./artifacts/summer-quest/spec.md), [plan.md](./artifacts/summer-quest/plan.md), [learnings.md](./artifacts/summer-quest/learnings.md)
 
 ### 백로그 — 다음에 할 일 (미착수, 변경량 커서 후순위)
@@ -22,7 +23,6 @@
 
 | 항목 | 내용 | 미룬 이유 |
 |---|---|---|
-| 오늘 날씨 기반 운동 퀘스트 추천 | 날씨 조건→운동 매핑 추천 로직 | 날씨 API 연동(WeatherWidget)은 완료됨 — 남은 건 추천 로직 설계뿐이라 착수 비용이 낮아짐 |
 | 지난주 달성률 기반 다음주 목표 추천 | 주간 통계 집계 + 추천 로직 | 통계 집계 레이어 신규 설계, idea.md의 "적응형 목표 추천" hypothesis와 겹침(루프 검증 후 도입 대상으로 이미 보류 중) |
 | 캘린더 / 휴식일 연동 반영 | 공휴일·휴가 등 예외일 처리 | 퀘스트 생성 규칙(요일 기반)에 예외 개념을 추가하는 스키마 변경, 여러 화면에 영향 |
 | Google Calendar 연동 | OAuth 인증 + Google API 연동 | 인증 플로우 신규 구축, 외부 계정 연결이라 보안·동의 처리 필요 — 가장 큰 변경량 |
