@@ -13,6 +13,8 @@ import { seedState } from "@/services/seed";
 
 interface GameContextValue {
   state: GameState;
+  /** "오늘" (날짜 seam). 테스트·E2E에서 주입 가능. */
+  today: Date;
   activeProfileId: ProfileId;
   setActiveProfileId: (id: ProfileId) => void;
   addPlanItem: (profileId: ProfileId, item: PlanItem) => void;
@@ -26,14 +28,18 @@ interface GameProviderProps {
   /** 테스트에서 주입 가능. 기본은 localStorage 어댑터. */
   adapter?: StorageAdapter;
   initialActiveProfileId?: ProfileId;
+  /** "오늘" 주입 (테스트·E2E). 미지정 시 실제 현재 날짜. */
+  today?: Date;
 }
 
 export function GameProvider({
   children,
   adapter = localStorageAdapter,
   initialActiveProfileId = "childA",
+  today: todayProp,
 }: GameProviderProps) {
   const [state, setState] = React.useState<GameState>(() => seedState());
+  const [today] = React.useState<Date>(() => todayProp ?? new Date());
   const [activeProfileId, setActiveProfileId] =
     React.useState<ProfileId>(initialActiveProfileId);
   const [hydrated, setHydrated] = React.useState(false);
@@ -82,12 +88,13 @@ export function GameProvider({
   const value = React.useMemo<GameContextValue>(
     () => ({
       state,
+      today,
       activeProfileId,
       setActiveProfileId,
       addPlanItem,
       removePlanItem,
     }),
-    [state, activeProfileId, addPlanItem, removePlanItem]
+    [state, today, activeProfileId, addPlanItem, removePlanItem]
   );
 
   if (!hydrated) return null;
